@@ -2,17 +2,10 @@
 # Configuration
 ###############################################################################
 # Import Packages
+import pandas as pd
 
 # Import Modules
-import src.config_data_processing
-
-
-
-
-from src.image_manipulation
-
-
-
+from indoor_object_detection.src import config_data_processing as cdp
 
 
 

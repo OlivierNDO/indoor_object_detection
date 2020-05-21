@@ -1,8 +1,3 @@
-
-
-import src.
-
-
 ### Object Classes to Use in Data Processing
 ###############################################################################
 config_obj_detection_classes = ['Bathtub', 'Countertop', 'Cabinetry','Ceiling fan',
