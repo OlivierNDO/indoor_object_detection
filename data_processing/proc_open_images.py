@@ -1,3 +1,12 @@
+### Overview
+###############################################################################
+# data source: 
+#       > https://storage.googleapis.com/openimages/web/download.html
+# helpful resources:
+#       > https://github.com/RockyXu66/Faster_RCNN_for_Open_Images_Dataset_Keras/blob/master/Object_Detection_DataPreprocessing.ipynb
+#       > https://machinelearningmastery.com/how-to-perform-object-detection-with-yolov3-in-keras/
+
+
 ### Configuration
 ###############################################################################
 # Import Modules
@@ -131,7 +140,7 @@ example_class_image_ids = list(train_annot_df[(train_annot_df.LabelName == examp
 example_class_image_df = train_img_df[train_img_df.ImageID.isin(example_class_image_ids)]
 example_class_image_urls = list(example_class_image_df['OriginalURL'])
 example_class_bbox_df = pd.read_csv(f'{config_data_dir}{config_train_bbox_csv}')
-example_class_bbox_df[example_class_bbox_df.ImageID.isin(example_class_image_ids)]
+example_class_bbox_df = example_class_bbox_df[example_class_bbox_df.ImageID.isin(example_class_image_ids)]
 
 
 
