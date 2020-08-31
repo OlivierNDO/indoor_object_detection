@@ -7,12 +7,14 @@
 #       > https://machinelearningmastery.com/how-to-perform-object-detection-with-yolov3-in-keras/
 
 
+
 ### Configuration
 ###############################################################################
 # Import Modules
 import collections
 import datetime
-from io import BytesIO
+from google.cloud import storage
+from io import BytesIO, StringIO
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import matplotlib.patches as patches
@@ -25,13 +27,15 @@ from tensorflow.keras.preprocessing.image import load_img
 import time
 from skimage.transform import resize
 
-# File Paths
-config_data_dir = 'D:/indoor_object_detection/data/source_data/'
-config_proc_data_dir = 'D:/indoor_object_detection/data/processed_data/'
+
+# File Paths & Credential JSON
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'D:/indoor_object_detection/iod_google_cred.json'
+config_source_bucket_name = 'open_images_v6_source_files'
 config_train_image_csv = 'train-images-boxable-with-rotation.csv'
 config_train_annotations_csv = 'train-annotations-human-imagelabels-boxable.csv'
 config_train_bbox_csv = 'oidv6-train-annotations-bbox.csv'
 config_class_desc_csv = 'class-descriptions-boxable.csv'
+
 
 
 ### Define Functions
@@ -120,27 +124,45 @@ def create_folder_if_not_existing(folder_path):
         print_timestamp_message(f'Creating folder path {folder_path}')
     else:
         print_timestamp_message(f'Folder path {folder_path} already exists')
-        
-        
+
+
+
+def read_gcs_csv_to_pandas(bucket_name, file_name, encoding = 'utf-8', header = 'infer'):
+    """
+    Read a csv file from a Google Cloud bucket to a local pandas.DataFrame() object
+    Args:
+        bucket_name (str): name of Google Cloud Storage bucket
+        file_name (str): file name of csv object in bucket
+        encoding (str): encoding of csv object. defaults to 'utf-8'
+        header (str | int): header argument passed to pandas.read_csv(). defaults to 'infer'
+    """
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(file_name)
+    content = blob.download_as_string()
+    data = StringIO(str(content, encoding))
+    return pd.read_csv(data, header = header)
+
 
 
 
 ### Execute Functions
 ###############################################################################
-#os.listdir(config_data_dir)
-train_img_df = pd.read_csv(f'{config_data_dir}{config_train_image_csv}')
-train_annot_df = pd.read_csv(f'{config_data_dir}{config_train_annotations_csv}')
-class_desc_df = pd.read_csv(f'{config_data_dir}{config_class_desc_csv}', header = None)
+
+# Read Files from Storage Bucket
+train_img_df = read_gcs_csv_to_pandas(bucket_name = config_source_bucket_name, file_name = config_train_image_csv)
+train_annot_df = read_gcs_csv_to_pandas(bucket_name = config_source_bucket_name, file_name = config_train_annotations_csv)
+class_desc_df = read_gcs_csv_to_pandas(bucket_name = config_source_bucket_name, file_name = config_class_desc_csv, header = None)
+class_bbox_df = read_gcs_csv_to_pandas(bucket_name = config_source_bucket_name, file_name = config_train_bbox_csv)
 class_label_dict = dict(zip(class_desc_df[1], class_desc_df[0]))
     
-    
+# Narrow Down Single Class
 example_class = 'Loveseat'
 example_label = class_label_dict.get(example_class)
 example_class_image_ids = list(train_annot_df[(train_annot_df.LabelName == example_label) & (train_annot_df.Confidence == 1)]['ImageID'])
 example_class_image_df = train_img_df[train_img_df.ImageID.isin(example_class_image_ids)]
 example_class_image_urls = list(example_class_image_df['OriginalURL'])
-example_class_bbox_df = pd.read_csv(f'{config_data_dir}{config_train_bbox_csv}')
-example_class_bbox_df = example_class_bbox_df[example_class_bbox_df.ImageID.isin(example_class_image_ids)]
+example_class_bbox_df = class_bbox_df[class_bbox_df.ImageID.isin(example_class_image_ids)]
 
 
 
