@@ -29,7 +29,7 @@ from skimage.transform import resize
 
 
 # File Paths & Credential JSON
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'D:/indoor_object_detection/iod_google_cred.json'
+config_gcs_auth_json_path = 'C:/gcs_auth/iod_google_cred.json'
 config_source_bucket_name = 'open_images_v6_source_files'
 config_train_image_csv = 'train-images-boxable-with-rotation.csv'
 config_train_annotations_csv = 'train-annotations-human-imagelabels-boxable.csv'
@@ -166,44 +166,53 @@ example_class_bbox_df = class_bbox_df[class_bbox_df.ImageID.isin(example_class_i
 
 
 
+
 class OpenCVImageClassRetriever:
-    def __init__(self, 
-                 class_name,
-                 img_csv_path = f'{config_data_dir}{config_train_image_csv}',
-                 annotation_csv_path = f'{config_data_dir}{config_train_annotations_csv}',
-                 bbox_csv_path = f'{config_data_dir}{config_train_bbox_csv}',
-                 class_desc_csv_path = f'{config_data_dir}{config_class_desc_csv}',
-                 output_path = config_proc_data_dir,
-                 image_id_col = 'ImageID',
-                 image_url_col = 'OriginalURL'
-                 ):
-        self.class_name = class_name
-        self.img_csv_path = img_csv_path
-        self.annotation_csv_path = annotation_csv_path
-        self.bbox_csv_path = bbox_csv_path
-        self.class_desc_csv_path = class_desc_csv_path
-        self.output_path = output_path
-        self.image_id_col = image_id_col
-        self.image_url_col = image_url_col
     """
     Retrieve, process, and save images from Google Open Images V6 URLs
     Args:
         class_name (str): class name corresponding to subset of images
+        bucket_name (str): Google Storage Bucket to read csv files from
         img_csv_path (str): csv file path to train images information (contains URLs, image IDs, etc.)
         annotation_csv_path (str): csv file path to annotation file (object label information)
         bbox_csv_path (str): csv file path to bounding box coordinate file (bounding box dimensions)
         class_desc_csv_path (str): csv file path class description mapping
-        output_path (str): folder path where output is to be written
         image_id_col (str): column name convention in Google Open Images used for the image identifier
         image_url_col (str): column name convention in Google Open Images used for URL reading
     """
     
+    def __init__(self, 
+                 class_name,
+                 local_gcs_json_path = f'{config_gcs_auth_json_path}',
+                 bucket_name = f'{config_source_bucket_name}',
+                 img_csv_path = f'{config_train_image_csv}',
+                 annotation_csv_path = f'{config_train_annotations_csv}',
+                 bbox_csv_path = f'{config_train_bbox_csv}',
+                 class_desc_csv_path = f'{config_class_desc_csv}',
+                 image_id_col = 'ImageID',
+                 image_url_col = 'OriginalURL'
+                 ):
+        # Initialize Arguments
+        self.class_name = class_name
+        self.local_gcs_json_path = local_gcs_json_path
+        self.bucket_name = bucket_name
+        self.img_csv_path = img_csv_path
+        self.annotation_csv_path = annotation_csv_path
+        self.bbox_csv_path = bbox_csv_path
+        self.class_desc_csv_path = class_desc_csv_path
+        self.image_id_col = image_id_col
+        self.image_url_col = image_url_col
+        
+        # Reference Google Cloud Authentication Document
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = self.local_gcs_json_path
+        
+    
     def get_image_class_info(self):
         # Read Csv Files
-        img_df = pd.read_csv(self.img_csv_path)
-        annot_df = pd.read_csv(self.annotation_csv_path)
-        class_desc_df = pd.read_csv(self.class_desc_csv_path, header = None)
-        class_bbox_df = pd.read_csv(self.bbox_csv_path)
+        img_df = read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = self.img_csv_path)
+        annot_df = read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = self.annotation_csv_path)
+        class_desc_df = read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = self.class_desc_csv_path, header = None)
+        class_bbox_df = read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = self.bbox_csv_path)
         
         # Create Dictionary of Image Class Labels
         class_label_dict = dict(zip(class_desc_df[1], class_desc_df[0]))
@@ -221,6 +230,14 @@ class OpenCVImageClassRetriever:
     
     def resize_and_save_images(self):
         print('this function does not do anything yet')
+
+
+
+
+
+
+
+
     
     
 
