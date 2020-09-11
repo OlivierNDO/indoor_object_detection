@@ -10,7 +10,7 @@
 
 ### Configuration
 ###############################################################################
-# Import Modules
+# Import Python Modules
 import collections
 import datetime
 from google.cloud import storage
@@ -27,145 +27,16 @@ from tensorflow.keras.preprocessing.image import load_img
 import time
 from skimage.transform import resize
 
+# Import Project Modules
+import src.config_data_processing as cdp
+import src.image_manipulation as imm
+import src.misc_functions as mf
 
-# File Paths & Credential JSON
-config_gcs_auth_json_path = 'C:/gcs_auth/iod_google_cred.json'
-config_source_bucket_name = 'open_images_v6_source_files'
-config_train_image_csv = 'train-images-boxable-with-rotation.csv'
-config_train_annotations_csv = 'train-annotations-human-imagelabels-boxable.csv'
-config_train_bbox_csv = 'oidv6-train-annotations-bbox.csv'
-config_class_desc_csv = 'class-descriptions-boxable.csv'
 
 
 
 ### Define Functions
 ###############################################################################
-
-
-def get_unique_count_dict(lst):
-    """
-    Generate and return dictionary with counts of unique items in a list
-    Args:
-        lst (list): list for which to generate unique element counts
-    """
-    key_values = collections.Counter(lst).keys()
-    count_values = collections.Counter(lst).values()
-    return dict(zip(key_values, count_values))
-
-
-def img_add_flip(arr, flip_horiz = True, flip_vert = False):
-    """
-    Flip numpy array horizontally and/or vertically
-    Args:
-        arr: three dimensional numpy array
-        flip_horiz: flip image horizontally
-        flip_vert: flip image vertically
-    """
-    assert len(arr.shape) == 3, "'arr' input array must be three dimensional"
-    arr_copy = arr.copy()
-    if flip_horiz:
-        arr_copy = np.fliplr(arr_copy)
-    if flip_vert:
-        arr_copy = np.flipud(arr_copy)
-    return arr_copy
-
-
-def load_resize_images(full_file_paths, resize_height, resize_width):
-    """
-    Load images and resize according to function arguments
-    Args:
-        full_file_paths: list of saved image files
-        resize_height: height of resized output images
-        resize_width: width of resized output images
-    Depdendencies:
-        numpy
-        skimage.transform.resize
-        tensorflow.keras.preprocessing.image.load_img
-    Returns:
-        numpy array of resized images
-    """
-    read_images = [load_img(c) for c in full_file_paths]
-    resized_images = [resize(np.array(ri), (resize_height, resize_width)) for ri in read_images]
-    return np.array(resized_images)
-
-
-def read_url_image(url):
-    """
-    Read image from URL with .jpg or .png extension
-    Args:
-        url (str): url character string
-    Returns:
-        numpy array
-    """
-    response = requests.get(url)
-    img = Image.open(BytesIO(response.content))
-    return np.array(img)
-
-
-def print_timestamp_message(message, timestamp_format = '%Y-%m-%d %H:%M:%S'):
-    """
-    Print formatted timestamp followed by custom message
-    Args:
-        message (str): string to concatenate with timestamp
-        timestamp_format (str): format for datetime string. defaults to '%Y-%m-%d %H:%M:%S'
-    """
-    ts_string = datetime.datetime.fromtimestamp(time.time()).strftime(timestamp_format)
-    print(f'{ts_string}: {message}')
-
-
-def create_folder_if_not_existing(folder_path):
-    """
-    Use os to create a folder if it does not already exist on the machien
-    Args:
-        folder_path (str): folder path to conditionally create
-    """
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
-        print_timestamp_message(f'Creating folder path {folder_path}')
-    else:
-        print_timestamp_message(f'Folder path {folder_path} already exists')
-
-
-
-def read_gcs_csv_to_pandas(bucket_name, file_name, encoding = 'utf-8', header = 'infer'):
-    """
-    Read a csv file from a Google Cloud bucket to a local pandas.DataFrame() object
-    Args:
-        bucket_name (str): name of Google Cloud Storage bucket
-        file_name (str): file name of csv object in bucket
-        encoding (str): encoding of csv object. defaults to 'utf-8'
-        header (str | int): header argument passed to pandas.read_csv(). defaults to 'infer'
-    """
-    client = storage.Client()
-    bucket = client.bucket(bucket_name)
-    blob = bucket.blob(file_name)
-    content = blob.download_as_string()
-    data = StringIO(str(content, encoding))
-    return pd.read_csv(data, header = header)
-
-
-
-
-### Execute Functions
-###############################################################################
-
-# Read Files from Storage Bucket
-train_img_df = read_gcs_csv_to_pandas(bucket_name = config_source_bucket_name, file_name = config_train_image_csv)
-train_annot_df = read_gcs_csv_to_pandas(bucket_name = config_source_bucket_name, file_name = config_train_annotations_csv)
-class_desc_df = read_gcs_csv_to_pandas(bucket_name = config_source_bucket_name, file_name = config_class_desc_csv, header = None)
-class_bbox_df = read_gcs_csv_to_pandas(bucket_name = config_source_bucket_name, file_name = config_train_bbox_csv)
-class_label_dict = dict(zip(class_desc_df[1], class_desc_df[0]))
-    
-# Narrow Down Single Class
-example_class = 'Loveseat'
-example_label = class_label_dict.get(example_class)
-example_class_image_ids = list(train_annot_df[(train_annot_df.LabelName == example_label) & (train_annot_df.Confidence == 1)]['ImageID'])
-example_class_image_df = train_img_df[train_img_df.ImageID.isin(example_class_image_ids)]
-example_class_image_urls = list(example_class_image_df['OriginalURL'])
-example_class_bbox_df = class_bbox_df[class_bbox_df.ImageID.isin(example_class_image_ids)]
-
-
-
 
 class OpenCVImageClassRetriever:
     """
@@ -183,12 +54,12 @@ class OpenCVImageClassRetriever:
     
     def __init__(self, 
                  class_name,
-                 local_gcs_json_path = f'{config_gcs_auth_json_path}',
-                 bucket_name = f'{config_source_bucket_name}',
-                 img_csv_path = f'{config_train_image_csv}',
-                 annotation_csv_path = f'{config_train_annotations_csv}',
-                 bbox_csv_path = f'{config_train_bbox_csv}',
-                 class_desc_csv_path = f'{config_class_desc_csv}',
+                 local_gcs_json_path = f'{cdp.config_gcs_auth_json_path}',
+                 bucket_name = f'{cdp.config_source_bucket_name}',
+                 img_csv_path = f'{cdp.config_train_image_csv}',
+                 annotation_csv_path = f'{cdp.config_train_annotations_csv}',
+                 bbox_csv_path = f'{cdp.config_train_bbox_csv}',
+                 class_desc_csv_path = f'{cdp.config_class_desc_csv}',
                  image_id_col = 'ImageID',
                  image_url_col = 'OriginalURL'
                  ):
@@ -209,10 +80,10 @@ class OpenCVImageClassRetriever:
     
     def get_image_class_info(self):
         # Read Csv Files
-        img_df = read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = self.img_csv_path)
-        annot_df = read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = self.annotation_csv_path)
-        class_desc_df = read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = self.class_desc_csv_path, header = None)
-        class_bbox_df = read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = self.bbox_csv_path)
+        img_df = mf.read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = self.img_csv_path)
+        annot_df = mf.read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = self.annotation_csv_path)
+        class_desc_df = mf.read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = self.class_desc_csv_path, header = None)
+        class_bbox_df = mf.read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = self.bbox_csv_path)
         
         # Create Dictionary of Image Class Labels
         class_label_dict = dict(zip(class_desc_df[1], class_desc_df[0]))
@@ -230,6 +101,36 @@ class OpenCVImageClassRetriever:
     
     def resize_and_save_images(self):
         print('this function does not do anything yet')
+
+
+
+### Execute Functions
+###############################################################################
+image_retriever = OpenCVImageClassRetriever(class_name = 'Loveseat')
+temp_urls, temp_bbox_df, image_ids = image_retriever.get_image_class_info()
+
+
+
+
+
+
+# Read Files from Storage Bucket
+train_img_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket_name, file_name = cdp.config_train_image_csv)
+train_annot_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket_name, file_name = cdp.config_train_annotations_csv)
+class_desc_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket_name, file_name = cdp.config_class_desc_csv, header = None)
+class_bbox_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket_name, file_name = cdp.config_train_bbox_csv)
+class_label_dict = dict(zip(class_desc_df[1], class_desc_df[0]))
+    
+# Narrow Down Single Class
+example_class = 'Loveseat'
+example_label = class_label_dict.get(example_class)
+example_class_image_ids = list(train_annot_df[(train_annot_df.LabelName == example_label) & (train_annot_df.Confidence == 1)]['ImageID'])
+example_class_image_df = train_img_df[train_img_df.ImageID.isin(example_class_image_ids)]
+example_class_image_urls = list(example_class_image_df['OriginalURL'])
+example_class_bbox_df = class_bbox_df[class_bbox_df.ImageID.isin(example_class_image_ids)]
+
+
+
 
 
 
@@ -276,8 +177,6 @@ def plot_image_bounding_box(img_array, xmin, xmax, ymin, ymax):
 
 
 
-image_retriever = OpenCVImageClassRetriever(class_name = 'Loveseat')
-temp_urls, temp_bbox_df, image_ids = image_retriever.get_image_class_info()
 
 
 i = 32
