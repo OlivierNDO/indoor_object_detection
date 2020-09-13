@@ -56,6 +56,47 @@ def extract_image_subset(img_arr, xmin, xmax, ymin, ymax):
     return img_arr[int(ymin * h):int(ymax * h), int(xmin * w):int(xmax * w)]
 
 
+def plot_image_bounding_box(img_arr, xmin, xmax, ymin, ymax, label,
+                            box_color = 'red', text_color = 'red', 
+                            fontsize = 11, linewidth = 1, y_offset = -10):
+    """
+    Create a matplotlib image plot with one or more bounding boxes
+    Args:
+        img_array (numpy.array): numpy array of image
+        xmin (list): list of x-minimum coordinates (expressed as percentages)
+        xmax (list): list of x-maximum coordinates (expressed as percentages)
+        ymin (list): list of y-minimum coordinates (expressed as percentages)
+        ymax (list): list of y-maximum coordinates (expressed as percentages)
+        label (list): list of bounding box labels
+        box_color (str): color to use in bounding box edge (defaults to 'red')
+        text_color (str): color to use in text label (defaults to 'red')
+        fontsize (int): size to use for label font (defaults to 11)
+        linewidth (int): size to use for box edge line width (defaults to 1)
+        y_offset (int): how far to offset text label from upper-left corner of bounding box (defaults to -10)
+    """
+    # Extract image dimensions and create plot object
+    h, w, c = img_arr.shape
+    fig,ax = plt.subplots(1)
+    
+    # Extract coordinates and dimensions
+    for i, x in enumerate(xmin):
+        
+        xmin_p = int(x * w)
+        xmax_p = int(xmax[i] * w)
+        ymin_p = int(ymin[i] * h)
+        ymax_p = int(ymax[i] * h)
+        box_width = xmax_p - xmin_p
+        box_height = ymax_p - ymin_p
+    
+        # Create rectangle and label text
+        rect = patches.Rectangle((xmin_p, ymin_p), box_width, box_height, linewidth = linewidth, edgecolor = box_color, facecolor = 'none')
+        ax.text(xmin_p, ymin_p + y_offset, label[i], color = text_color, fontsize = fontsize)
+        ax.add_patch(rect)
+    plt.imshow(img_arr)
+    plt.show()
+
+
+
 
 
 
@@ -131,6 +172,8 @@ image_retriever = OpenCVImageClassRetriever(class_name = 'Loveseat')
 temp_urls, temp_bbox_df, image_ids, class_image_df = image_retriever.get_image_class_info()
 
 
+image_arrays = imm.load_resize_images_from_urls(url_list = temp_urls, resize_height = cdp.config_resize_height, resize_width = cdp.config_resize_width)
+
 
 # Single Image
 use_image_id = image_ids[0]
@@ -143,119 +186,6 @@ use_xmin = use_bbox['XMin'].values[0]
 use_xmax = use_bbox['XMax'].values[0]
 use_ymin = use_bbox['YMin'].values[0]
 use_ymax = use_bbox['YMax'].values[0]
-
-
-
-
-
-use_img_cropped = extract_image_subset(img_arr = use_img_array, xmin = use_xmin, xmax = use_xmax, ymin = use_ymin, ymax = use_ymax)
-plt.imshow(use_img_cropped)
-
-
-
-def plot_image_bounding_box(img_arr, xmin, xmax, ymin, ymax,
-                            label = '', box_color = 'red', text_color = 'red',
-                            fontsize = 11, linewidth = 1, y_offset = -10):
-    """
-    Create a matplotlib image plot with one or more bounding boxes
-    Args:
-        img_array (numpy.array): numpy array of image
-        xmin (list): list of x-minimum coordinates (expressed as percentages)
-        xmax (list): list of x-maximum coordinates (expressed as percentages)
-        ymin (list): list of y-minimum coordinates (expressed as percentages)
-        ymax (list): list of y-maximum coordinates (expressed as percentages)
-    """
-    # Extract image dimensions and create plot object
-    h, w, c = img_arr.shape
-    fig,ax = plt.subplots(1)
-    
-    # Extract coordinates and dimensions
-    xmin_p = int(xmin * w)
-    xmax_p = int(xmax * w)
-    ymin_p = int(ymin * h)
-    ymax_p = int(ymax * h)
-    box_width = xmax_p - xmin_p
-    box_height = ymax_p - ymin_p
-    
-    # Create rectangle and label text
-    rect = patches.Rectangle((xmin_p, ymin_p), box_width, box_height, linewidth = linewidth, edgecolor = box_color, facecolor = 'none')
-    ax.text(xmin_p, ymin_p + y_offset, label, color = text_color, fontsize = fontsize)
-    ax.imshow(img_arr)
-    ax.add_patch(rect)
-    plt.show()
-
-
-
-
-
-
-def plot_image_bounding_box(img_arr, xmin, xmax, ymin, ymax, label,
-                            box_color = 'red', text_color = 'red', 
-                            fontsize = 11, linewidth = 1, y_offset = -10):
-    """
-    Create a matplotlib image plot with one or more bounding boxes
-    Args:
-        img_array (numpy.array): numpy array of image
-        xmin (list): list of x-minimum coordinates (expressed as percentages)
-        xmax (list): list of x-maximum coordinates (expressed as percentages)
-        ymin (list): list of y-minimum coordinates (expressed as percentages)
-        ymax (list): list of y-maximum coordinates (expressed as percentages)
-        label (list): list of bounding box labels
-        box_color (str): color to use in bounding box edge (defaults to 'red')
-        text_color (str): color to use in text label (defaults to 'red')
-        fontsize (int): size to use for label font (defaults to 11)
-        linewidth (int): size to use for box edge line width (defaults to 1)
-        y_offset (int): how far to offset text label from upper-left corner of bounding box (defaults to -10)
-    """
-    # Extract image dimensions and create plot object
-    h, w, c = img_arr.shape
-    fig,ax = plt.subplots(1)
-    
-    # Extract coordinates and dimensions
-    for i, x in enumerate(xmin):
-        
-        xmin_p = int(x * w)
-        xmax_p = int(xmax[i] * w)
-        ymin_p = int(ymin[i] * h)
-        ymax_p = int(ymax[i] * h)
-        box_width = xmax_p - xmin_p
-        box_height = ymax_p - ymin_p
-    
-        # Create rectangle and label text
-        rect = patches.Rectangle((xmin_p, ymin_p), box_width, box_height, linewidth = linewidth, edgecolor = box_color, facecolor = 'none')
-        ax.text(xmin_p, ymin_p + y_offset, label[i], color = text_color, fontsize = fontsize)
-        ax.add_patch(rect)
-    plt.imshow(img_arr)
-    plt.show()
-
-
-
-
-
-boxed_img = plot_image_bounding_box(img_arr = use_img_array,
-                        xmin = [use_xmin, use_xmin * 1.05],
-                        xmax = [use_xmax, use_xmax * 1.05],
-                        ymin = [use_ymin, use_ymin * 1.05],
-                        ymax = [use_ymax, use_ymax * 1.05],
-                        label = ['Loveseat', 'Loveseat'])
-
-
-
-
-
-plot_image_bounding_box(img_arr = use_img_array, xmin = use_xmin, xmax = use_xmax, ymin = use_ymin, ymax = use_ymax, label = 'Loveseat')
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -276,95 +206,5 @@ example_class_image_ids = list(train_annot_df[(train_annot_df.LabelName == examp
 example_class_image_df = train_img_df[train_img_df.ImageID.isin(example_class_image_ids)]
 example_class_image_urls = list(example_class_image_df['OriginalURL'])
 example_class_bbox_df = class_bbox_df[class_bbox_df.ImageID.isin(example_class_image_ids)]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    
-
-def plot_image_bounding_box(img_array, xmin, xmax, ymin, ymax):
-    """
-    Create a matplotlib image plot with one or more bounding boxes
-    Args:
-        img_array (numpy.array): numpy array of image
-        xmin (list): list of x-minimum coordinates (expressed as percentages)
-        xmax (list): list of x-maximum coordinates (expressed as percentages)
-        ymin (list): list of y-minimum coordinates (expressed as percentages)
-        ymax (list): list of y-maximum coordinates (expressed as percentages)
-    """
-    # Extract image dimensions and create plot object
-    h, w, c = img.shape
-    fig,ax = plt.subplots(1)
-    ax.imshow(img)
-    
-    for i, xM in enumerate(xmin):
-        # Extract coordinates and dimensions
-        xmin_p = int(xM * w)
-        xmax_p = int(xmax[i] * w)
-        ymin_p = int(ymin[i] * h)
-        ymax_p = int(ymax[i] * h)
-        coords = [xmin_p, xmax_p, ymin_p, ymax_p]
-        print(coords)
-        upper_left_point = (xmin_p, ymax_p)
-        box_width = xmax_p - xmin_p
-        box_height = ymax_p - ymin_p
-        print(upper_left_point)
-        
-        # Create rectangle
-        rect = patches.Rectangle((xmin_p, ymax_p), box_width, box_height, linewidth=1, edgecolor='r', facecolor='none')
-        ax.add_patch(rect)
-    plt.show()
-
-
-
-
-
-i = 32
-img_id = image_ids[i]
-img_bbox = temp_bbox_df[temp_bbox_df.ImageID == img_id]
-img = read_url_image(temp_urls[i])
-
-
-
-plot_image_bounding_box(img_array = img,
-                        xmin = list(img_bbox['XMin']),
-                        xmax = list(img_bbox['XMax']),
-                        ymin = list(img_bbox['YMin']),
-                        ymax = list(img_bbox['YMax']))
-
-
-
-
 
 

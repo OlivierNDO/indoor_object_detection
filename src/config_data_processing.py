@@ -18,5 +18,12 @@ config_train_bbox_csv = 'oidv6-train-annotations-bbox.csv'
 config_class_desc_csv = 'class-descriptions-boxable.csv'
 
 
+### Data Manipulation
+###############################################################################
+config_resize_height = 200
+config_resize_width = 200
+
+
+
 
 
