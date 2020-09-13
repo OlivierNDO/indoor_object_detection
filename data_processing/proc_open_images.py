@@ -174,7 +174,7 @@ temp_urls, temp_bbox_df, image_ids, class_image_df = image_retriever.get_image_c
 
 
 image_arrays = imm.load_resize_images_from_urls(url_list = temp_urls, resize_height = cdp.config_resize_height, resize_width = cdp.config_resize_width)
-
+image_arrays_concat = np.array(image_arrays)
 
 
 

@@ -94,16 +94,10 @@ def load_resize_images_from_urls(url_list, resize_height, resize_width):
     read_images = []
     for i, x in tqdm.tqdm(enumerate(url_list)):
         try:
-            read_images.append(read_url_image(x))
+            img = read_url_image(x)
+            resized_img = resize(img[:,:,:3], (resize_height, resize_width))
+            read_images.append(resized_img)
         except:
             read_images.append(np.empty((resize_width, resize_height, 3)))
-    return np.array([resize(np.array(ri[:,:,:3]), (resize_height, resize_width)) for ri in read_images])
-        
-    return np.array([resize(np.array(ri), (resize_height, resize_width)) for ri in read_images])
-
-
-
-
-
-
+    return read_images
 
