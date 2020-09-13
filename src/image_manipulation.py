@@ -76,6 +76,7 @@ def load_resize_images_from_files(full_file_paths, resize_height, resize_width):
 
 
 
+
 def load_resize_images_from_urls(url_list, resize_height, resize_width):
     """
     Load images from list of URLs and resize according to function arguments
@@ -88,7 +89,7 @@ def load_resize_images_from_urls(url_list, resize_height, resize_width):
         skimage.transform.resize
         tensorflow.keras.preprocessing.image.load_img
     Returns:
-        numpy array of resized images
+        4d numpy array of resized images
     """
     read_images = []
     for i, x in tqdm.tqdm(enumerate(url_list)):
@@ -96,9 +97,9 @@ def load_resize_images_from_urls(url_list, resize_height, resize_width):
             read_images.append(read_url_image(x))
         except:
             read_images.append(np.empty((resize_width, resize_height, 3)))
-    resized_images = [resize(np.array(ri), (resize_height, resize_width)) for ri in read_images]
-    return np.array(resized_images)
-
+    return np.array([resize(np.array(ri[:,:,:3]), (resize_height, resize_width)) for ri in read_images])
+        
+    return np.array([resize(np.array(ri), (resize_height, resize_width)) for ri in read_images])
 
 
 

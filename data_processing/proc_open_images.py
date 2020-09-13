@@ -26,6 +26,7 @@ import requests
 from tensorflow.keras.preprocessing.image import load_img
 import time
 from skimage.transform import resize
+import tqdm
 
 # Import Project Modules
 import src.config_data_processing as cdp
@@ -173,6 +174,8 @@ temp_urls, temp_bbox_df, image_ids, class_image_df = image_retriever.get_image_c
 
 
 image_arrays = imm.load_resize_images_from_urls(url_list = temp_urls, resize_height = cdp.config_resize_height, resize_width = cdp.config_resize_width)
+
+
 
 
 # Single Image
