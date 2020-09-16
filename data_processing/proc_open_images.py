@@ -23,6 +23,7 @@ import os
 import pandas as pd
 from PIL import Image
 import requests
+import tempfile
 from tensorflow.keras.preprocessing.image import load_img
 import time
 from skimage.transform import resize
@@ -40,61 +41,6 @@ import src.misc_functions as mf
 
 
 
-def extract_image_subset(img_arr, xmin, xmax, ymin, ymax):
-    """
-    Retrieve subset of 3d numpy array using decimal coordinates
-    (i.e. portion of image with bounding box)
-    Args:
-        img_arr (np.array): 3d numpy array of image
-        xmin (float): minimum X-coordinate (expressed as decimal)
-        xmax (float): maximum X-coordinate (expressed as decimal)
-        ymin (float): minimum Y-coordinate (expressed as decimal)
-        ymax (float): maximum Y-coordinate (expressed as decimal)
-    Returns:
-        numpy.array
-    """
-    h, w, c = img_arr.shape
-    return img_arr[int(ymin * h):int(ymax * h), int(xmin * w):int(xmax * w)]
-
-
-def plot_image_bounding_box(img_arr, xmin, xmax, ymin, ymax, label,
-                            box_color = 'red', text_color = 'red', 
-                            fontsize = 11, linewidth = 1, y_offset = -10):
-    """
-    Create a matplotlib image plot with one or more bounding boxes
-    Args:
-        img_array (numpy.array): numpy array of image
-        xmin (list): list of x-minimum coordinates (expressed as percentages)
-        xmax (list): list of x-maximum coordinates (expressed as percentages)
-        ymin (list): list of y-minimum coordinates (expressed as percentages)
-        ymax (list): list of y-maximum coordinates (expressed as percentages)
-        label (list): list of bounding box labels
-        box_color (str): color to use in bounding box edge (defaults to 'red')
-        text_color (str): color to use in text label (defaults to 'red')
-        fontsize (int): size to use for label font (defaults to 11)
-        linewidth (int): size to use for box edge line width (defaults to 1)
-        y_offset (int): how far to offset text label from upper-left corner of bounding box (defaults to -10)
-    """
-    # Extract image dimensions and create plot object
-    h, w, c = img_arr.shape
-    fig,ax = plt.subplots(1)
-    
-    # Extract coordinates and dimensions
-    for i, x in enumerate(xmin):
-        
-        xmin_p = int(x * w)
-        xmax_p = int(xmax[i] * w)
-        ymin_p = int(ymin[i] * h)
-        ymax_p = int(ymax[i] * h)
-        box_width = xmax_p - xmin_p
-        box_height = ymax_p - ymin_p
-    
-        # Create rectangle and label text
-        rect = patches.Rectangle((xmin_p, ymin_p), box_width, box_height, linewidth = linewidth, edgecolor = box_color, facecolor = 'none')
-        ax.text(xmin_p, ymin_p + y_offset, label[i], color = text_color, fontsize = fontsize)
-        ax.add_patch(rect)
-    plt.imshow(img_arr)
-    plt.show()
 
 
 
@@ -119,23 +65,35 @@ class OpenCVImageClassRetriever:
                  class_name,
                  local_gcs_json_path = f'{cdp.config_gcs_auth_json_path}',
                  bucket_name = f'{cdp.config_source_bucket_name}',
+                 processed_bucket_subfolder = f'{cdp.config_processed_bucket_subfolder}',
+                 processed_array_save_name = 'train_images.npy',
+                 processed_bbox_save_name = 'train_bbox.csv',
+                 processed_class_save_name = 'train_class_df.csv',
                  img_csv_path = f'{cdp.config_train_image_csv}',
                  annotation_csv_path = f'{cdp.config_train_annotations_csv}',
                  bbox_csv_path = f'{cdp.config_train_bbox_csv}',
                  class_desc_csv_path = f'{cdp.config_class_desc_csv}',
                  image_id_col = 'ImageID',
-                 image_url_col = 'OriginalURL'
+                 image_url_col = 'OriginalURL',
+                 resize_height = cdp.config_resize_height,
+                 resize_width = cdp.config_resize_width
                  ):
         # Initialize Arguments
         self.class_name = class_name
         self.local_gcs_json_path = local_gcs_json_path
         self.bucket_name = bucket_name
+        self.processed_bucket_subfolder = processed_bucket_subfolder
+        self.processed_array_save_name = processed_array_save_name
+        self.processed_bbox_save_name = processed_bbox_save_name
+        self.processed_class_save_name = processed_class_save_name
         self.img_csv_path = img_csv_path
         self.annotation_csv_path = annotation_csv_path
         self.bbox_csv_path = bbox_csv_path
         self.class_desc_csv_path = class_desc_csv_path
         self.image_id_col = image_id_col
         self.image_url_col = image_url_col
+        self.resize_height = resize_height
+        self.resize_width = resize_width
         
         # Reference Google Cloud Authentication Document
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = self.local_gcs_json_path
@@ -163,51 +121,36 @@ class OpenCVImageClassRetriever:
     
     
     def resize_and_save_images(self):
-        print('this function does not do anything yet')
-
-
+        # Generate Class Information
+        mf.print_timestamp_message(f'Getting urls, bounding boxes, and image IDs for {self.class_name} images')
+        urls, bbox_df, image_ids, class_image_df = self.get_image_class_info()
+        
+        # Read and Resize Images
+        mf.print_timestamp_message(f'Reading images from URLs and resizing to {self.resize_height} X {self.resize_width}')
+        image_arrays = imm.load_resize_images_from_urls(url_list = urls, resize_height = self.resize_height, resize_width = self.resize_width)
+        image_arrays_concat = np.array(image_arrays)
+        
+        # Write Images to Google Cloud Storage Bucket
+        image_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_array_save_name}'
+        mf.print_timestamp_message(f'Writing images to GCS bucket/folder {self.bucket_name}/{image_save_name}')
+        mf.save_np_array_to_gsc(np_array = image_arrays_concat, bucket_name = self.bucket_name, file_name = image_save_name)
+        
+        # Write Bounding Box Csv to Google Cloud Storage Bucket
+        bbox_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_bbox_save_name}'
+        mf.print_timestamp_message(f'Writing bounding box csv file to GCS bucket/folder {self.bucket_name}/{bbox_save_name}')
+        mf.write_csv_to_gcs(dframe = bbox_df, bucket_name = self.bucket_name, file_name = bbox_save_name)
+        
+        # Write Class Info Csv to Google Cloud Storage Bucket
+        class_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_class_save_name}'
+        mf.print_timestamp_message(f'Writing class image info csv file to GCS bucket/folder {self.bucket_name}/{class_save_name}')
+        mf.write_csv_to_gcs(dframe = class_image_df, bucket_name = self.bucket_name, file_name = class_save_name)
+        
+        
 
 ### Execute Functions
 ###############################################################################
 image_retriever = OpenCVImageClassRetriever(class_name = 'Loveseat')
-temp_urls, temp_bbox_df, image_ids, class_image_df = image_retriever.get_image_class_info()
+image_retriever.resize_and_save_images()
 
-
-image_arrays = imm.load_resize_images_from_urls(url_list = temp_urls, resize_height = cdp.config_resize_height, resize_width = cdp.config_resize_width)
-image_arrays_concat = np.array(image_arrays)
-
-
-
-# Single Image
-use_image_id = image_ids[0]
-use_url = class_image_df.loc[class_image_df.ImageID == use_image_id, 'OriginalURL'].values[0]
-use_img_array = mf.read_url_image(use_url)
-plt.imshow(use_img_array)
-h, w, c = use_img_array.shape
-use_bbox = temp_bbox_df.loc[temp_bbox_df.ImageID == use_image_id]
-use_xmin = use_bbox['XMin'].values[0]
-use_xmax = use_bbox['XMax'].values[0]
-use_ymin = use_bbox['YMin'].values[0]
-use_ymax = use_bbox['YMax'].values[0]
-
-
-
-
-
-
-# Read Files from Storage Bucket
-train_img_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket_name, file_name = cdp.config_train_image_csv)
-train_annot_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket_name, file_name = cdp.config_train_annotations_csv)
-class_desc_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket_name, file_name = cdp.config_class_desc_csv, header = None)
-class_bbox_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket_name, file_name = cdp.config_train_bbox_csv)
-class_label_dict = dict(zip(class_desc_df[1], class_desc_df[0]))
-    
-# Narrow Down Single Class
-example_class = 'Loveseat'
-example_label = class_label_dict.get(example_class)
-example_class_image_ids = list(train_annot_df[(train_annot_df.LabelName == example_label) & (train_annot_df.Confidence == 1)]['ImageID'])
-example_class_image_df = train_img_df[train_img_df.ImageID.isin(example_class_image_ids)]
-example_class_image_urls = list(example_class_image_df['OriginalURL'])
-example_class_bbox_df = class_bbox_df[class_bbox_df.ImageID.isin(example_class_image_ids)]
 
 
