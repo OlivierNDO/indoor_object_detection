@@ -1,20 +1,11 @@
 ### Object Classes to Use in Data Processing
 ###############################################################################
-config_obj_detection_classes = ['Bathroom cabinet', 'Bathtub', 'Bed', 'Bench', 'Bidet',
-                                'Billiard table', 'Cabinetry', 'Cat furniture', 'Ceiling fan',
-                                'Chair', 'Chest of drawers', 'Closet', 'Coffee table',
-                                'Computer keyboard', 'Computer monitor', 'Couch', 'Countertop',
-                                'Cupboard', 'Curtain', 'Desk', 'Dishwasher', 'Drawer',
-                                'Filing cabinet', 'Fireplace', 'Furniture', 'Gas stove',
-                                'Heater', 'Houseplant', 'Infant bed', 'Jacuzzi',
-                                'Kitchen & dining room table', 'Lamp', 'Laptop',
-                                'Loveseat', 'Microwave oven', 'Mirror', 'Nightstand',
-                                'Oven', 'Piano', 'Refrigerator', 'Sculpture', 'Shelf',
-                                'Shower', 'Sink', 'Sofa bed', 'Sports equipment', 'Stairs',
-                                'Stationary bicycle', 'Stool', 'Studio couch', 'Table', 
-                                'Tablet computer', 'Telephone', 'Television', 'Toilet',
-                                'Treadmill', 'Vase', 'Wall clock', 'Wardrobe',
-                                'Washing machine', 'Wine rack', 'Wood-burning stove']
+config_obj_detection_classes = ['Sports equipment', 'Chair', 'Sculpture', 'Laptop', 'Desk', 'Houseplant',
+                                'Shelf', 'Couch', 'Stairs', 'Vase', 'Bench', 'Computer monitor',
+                                'Computer keyboard', 'Sink', 'Bed', 'Cabinetry', 'Coffee table', 
+                                'Television', 'Curtain', 'Piano', 'Mirror', 'Countertop',
+                                'Kitchen & dining room table', 'Drawer', 'Lamp', 'Fireplace',
+                                'Studio couch', 'Chest of drawers', 'Sofa bed']
 
 
 ### File Paths ... TO DO: use relative path or shared location for data

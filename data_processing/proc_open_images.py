@@ -36,20 +36,5 @@ import src.misc_functions as mf
 ###############################################################################     
 if __name__ == '__main__':
     for c in cdp.config_obj_detection_classes:
-        mf.print_timestamp_message(f"Starting image processing and GCS file write for image class '{c}'")
-        image_retriever = imm.OpenCVImageClassRetriever(class_name = c, use_local = True)
+        image_retriever = imm.OpenCVImageClassRetriever(class_name = c, max_images = 5000)
         image_retriever.resize_and_save_images()
-
-
-
-
-
-
-
-
-
-
-
-
-
-        

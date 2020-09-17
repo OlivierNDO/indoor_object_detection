@@ -189,8 +189,7 @@ class OpenCVImageClassRetriever:
                  image_url_col = 'OriginalURL',
                  resize_height = cdp.config_resize_height,
                  resize_width = cdp.config_resize_width,
-                 use_local = False,
-                 local_save_path = cdp.config_temp_local_folder
+                 max_images = 5000,
                  ):
         # Initialize Arguments
         self.class_name = class_name
@@ -208,8 +207,7 @@ class OpenCVImageClassRetriever:
         self.image_url_col = image_url_col
         self.resize_height = resize_height
         self.resize_width = resize_width
-        self.use_local = use_local
-        self.local_save_path = local_save_path
+        self.max_images = max_images
         
         # Reference Google Cloud Authentication Document
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = self.local_gcs_json_path
@@ -228,6 +226,8 @@ class OpenCVImageClassRetriever:
         # Retrieve and return URLs, Bounding Box DataFrame, and Image IDs
         class_label = class_label_dict.get(self.class_name)
         class_image_ids = list(annot_df[(annot_df.LabelName == class_label) & (annot_df.Confidence == 1)][self.image_id_col])
+        if self.max_images is not None:
+            class_image_ids = class_image_ids[:self.max_images]
         class_image_df = img_df[img_df.ImageID.isin(class_image_ids)]
         class_bbox_df = class_bbox_df[(class_bbox_df.ImageID.isin(class_image_ids)) & \
                                       (class_bbox_df.LabelName == class_label)]
@@ -241,19 +241,15 @@ class OpenCVImageClassRetriever:
         urls, bbox_df, image_ids, class_image_df = self.get_image_class_info()
         
         # Read and Resize Images
-        mf.print_timestamp_message(f'Reading images from URLs and resizing to {self.resize_height} X {self.resize_width}')
+        n_url = len(urls)
+        mf.print_timestamp_message(f'Reading images from {n_url} URLs and resizing to {self.resize_height} X {self.resize_width}')
         image_arrays = load_resize_images_from_urls(url_list = urls, resize_height = self.resize_height, resize_width = self.resize_width)
         image_arrays_concat = np.array(image_arrays)
         
         # Write Images to Google Cloud Storage Bucket
-        if self.use_local:
-            image_save_name = f'{self.processed_array_save_name}'
-            mf.print_timestamp_message(f'Writing images to GCS bucket/folder {self.bucket_name}/{image_save_name}')
-            mf.save_np_array_to_gsc_local_path(np_array = image_arrays_concat, bucket_name = self.bucket_name, file_name = image_save_name, local_folder = self.local_save_path)
-        else:
-            image_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_array_save_name}'
-            mf.print_timestamp_message(f'Writing images to GCS bucket/folder {self.bucket_name}/{image_save_name}')
-            mf.save_np_array_to_gsc(np_array = image_arrays_concat, bucket_name = self.bucket_name, file_name = image_save_name)
+        image_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_array_save_name}'
+        mf.print_timestamp_message(f'Writing images to GCS bucket/folder {self.bucket_name}/{image_save_name}')
+        mf.save_np_array_to_gsc(np_array = image_arrays_concat, bucket_name = self.bucket_name, file_name = image_save_name)
         
         # Write Bounding Box Csv to Google Cloud Storage Bucket
         bbox_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_bbox_save_name}'
