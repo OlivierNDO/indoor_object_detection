@@ -68,7 +68,10 @@ annotation_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket
 # Retrieve information about one image class using a class from src.image_manipulation
 # (this will take a second... might want to close some Chrome tabs)
 image_retriever = imm.OpenCVImageClassRetriever(class_name = 'Loveseat')
-urls, bbox_df, image_ids, class_image_df = image_retriever.get_image_class_info()
+
+img_array = image_retriever.get_class_image_array()
+bbox_df = image_retriever.get_bounding_box_df()
+class_desc_df = image_retriever.get_class_desc_df()
 
 
 

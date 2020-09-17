@@ -122,3 +122,29 @@ def save_np_array_to_gsc(np_array, bucket_name, file_name):
         os.remove(temp_name)
     print_timestamp_message(f'file {file_name} written to Google Cloud Storage Bucket {bucket_name}')
         
+
+def list_gcs_bucket_files(bucket_name):
+    """
+    List file names in GCS bucket
+    Args:
+        bucket_name (str): name of Google Cloud Storage bucket
+    """
+    client = storage.Client()
+    bucket = client.get_bucket(bucket_name)
+    blob_files = [f for f in bucket.list_blobs()]
+    file_names = [str(bf).split(',')[1].strip() for bf in blob_files]
+    return file_names
+
+
+def gcs_subfolder_exists(bucket_name, subfolder_name):
+    """
+    Check whether subfolder exists in a Google Cloud Storage Bucket
+    Args:
+        bucket_name (str): name of Google Cloud Storage bucket
+        subfolder_name (str): name of subfolder to check for
+    Returns:
+        boolean
+    """
+    file_names = list_gcs_bucket_files(bucket_name)
+    subfolder_file_names = [x for x in file_names if f'/{subfolder_name}/' in x]
+    return len(subfolder_file_names) > 0
