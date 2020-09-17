@@ -188,7 +188,9 @@ class OpenCVImageClassRetriever:
                  image_id_col = 'ImageID',
                  image_url_col = 'OriginalURL',
                  resize_height = cdp.config_resize_height,
-                 resize_width = cdp.config_resize_width
+                 resize_width = cdp.config_resize_width,
+                 use_local = False,
+                 local_save_path = cdp.config_temp_local_folder
                  ):
         # Initialize Arguments
         self.class_name = class_name
@@ -206,6 +208,8 @@ class OpenCVImageClassRetriever:
         self.image_url_col = image_url_col
         self.resize_height = resize_height
         self.resize_width = resize_width
+        self.use_local = use_local
+        self.local_save_path = local_save_path
         
         # Reference Google Cloud Authentication Document
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = self.local_gcs_json_path
@@ -244,7 +248,10 @@ class OpenCVImageClassRetriever:
         # Write Images to Google Cloud Storage Bucket
         image_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_array_save_name}'
         mf.print_timestamp_message(f'Writing images to GCS bucket/folder {self.bucket_name}/{image_save_name}')
-        mf.save_np_array_to_gsc(np_array = image_arrays_concat, bucket_name = self.bucket_name, file_name = image_save_name)
+        if self.use_local:
+            mf.save_np_array_to_gsc_local_path(np_array = image_arrays_concat, bucket_name = self.bucket_name, file_name = image_save_name, local_folder = self.local_save_path)
+        else:
+            mf.save_np_array_to_gsc(np_array = image_arrays_concat, bucket_name = self.bucket_name, file_name = image_save_name)
         
         # Write Bounding Box Csv to Google Cloud Storage Bucket
         bbox_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_bbox_save_name}'

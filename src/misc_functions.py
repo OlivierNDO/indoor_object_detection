@@ -121,7 +121,26 @@ def save_np_array_to_gsc(np_array, bucket_name, file_name):
         blob.upload_from_filename(temp_name)
         os.remove(temp_name)
     print_timestamp_message(f'file {file_name} written to Google Cloud Storage Bucket {bucket_name}')
-        
+    
+
+def save_np_array_to_gsc_local_path(np_array, bucket_name, file_name, local_folder):
+    """
+    Save numpy array to Google Cloud Storage bucket as .npy file.
+    Writes a temporary file to your local system, uploads to GCS, and removes from local.
+    Args:
+        np_array (numpy.array): numpy array to save in GCS
+        bucket_name (str): name of Google Cloud Storage bucket
+        file_name (str): file name of csv object in bucket
+    """
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    temp_name = f'{local_folder}{file_name}'
+    np.save(temp_name, np_array)
+    blob = bucket.blob(file_name)
+    blob.upload_from_filename(temp_name)
+    os.remove(temp_name)
+    print_timestamp_message(f'file {file_name} written to Google Cloud Storage Bucket {bucket_name}')
+    
 
 def list_gcs_bucket_files(bucket_name):
     """

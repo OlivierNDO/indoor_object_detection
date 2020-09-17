@@ -26,7 +26,7 @@ config_train_image_csv = 'train-images-boxable-with-rotation.csv'
 config_train_annotations_csv = 'train-annotations-human-imagelabels-boxable.csv'
 config_train_bbox_csv = 'oidv6-train-annotations-bbox.csv'
 config_class_desc_csv = 'class-descriptions-boxable.csv'
-
+config_temp_local_folder = 'D:/numpy_transfer/'
 
 ### Data Manipulation
 ###############################################################################
