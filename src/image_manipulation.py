@@ -246,11 +246,13 @@ class OpenCVImageClassRetriever:
         image_arrays_concat = np.array(image_arrays)
         
         # Write Images to Google Cloud Storage Bucket
-        image_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_array_save_name}'
-        mf.print_timestamp_message(f'Writing images to GCS bucket/folder {self.bucket_name}/{image_save_name}')
         if self.use_local:
+            image_save_name = f'{self.processed_array_save_name}'
+            mf.print_timestamp_message(f'Writing images to GCS bucket/folder {self.bucket_name}/{image_save_name}')
             mf.save_np_array_to_gsc_local_path(np_array = image_arrays_concat, bucket_name = self.bucket_name, file_name = image_save_name, local_folder = self.local_save_path)
         else:
+            image_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_array_save_name}'
+            mf.print_timestamp_message(f'Writing images to GCS bucket/folder {self.bucket_name}/{image_save_name}')
             mf.save_np_array_to_gsc(np_array = image_arrays_concat, bucket_name = self.bucket_name, file_name = image_save_name)
         
         # Write Bounding Box Csv to Google Cloud Storage Bucket
