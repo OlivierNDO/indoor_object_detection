@@ -87,7 +87,8 @@ class_desc_df = image_retriever.get_class_desc_df()
 
 # Notice the 'processed_files' subfolder
 df = pd.DataFrame(data=[{1,2,3},{4,5,6}],columns=['a','b','c'])
-mf.write_csv_to_gcs(dframe = df, bucket_name = cdp.config_source_bucket_name, file_name = 'processed_files/test_gcs_csv_write.csv')
+my_name = 'nick'
+mf.write_csv_to_gcs(dframe = df, bucket_name = cdp.config_source_bucket_name, file_name = f'processed_files/test_gcs_csv_write_{my_name}.csv')
 
 
 
