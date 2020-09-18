@@ -159,6 +159,8 @@ def plot_image_bounding_box(img_arr, xmin, xmax, ymin, ymax, label,
     plt.show()
 
 
+
+
 class OpenCVImageClassRetriever:
     """
     Retrieve, process, and save images from Google Open Images V6 URLs
@@ -293,8 +295,6 @@ class OpenCVImageClassRetriever:
         csv_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_class_save_name}'
         class_desc_df = mf.read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = csv_save_name)
         return class_desc_df
-
-
 
 
 

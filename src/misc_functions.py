@@ -5,6 +5,7 @@ import collections
 import datetime
 from google.cloud import storage
 from io import BytesIO, StringIO
+import itertools
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import matplotlib.patches as patches
@@ -25,6 +26,11 @@ import src.image_manipulation as imm
 
 ### Define Functions and Classes
 ###############################################################################
+def unnest_list_of_lists(LOL):
+    """unnest list of lists"""
+    return list(itertools.chain.from_iterable(LOL))
+
+
 def get_unique_count_dict(lst):
     """
     Generate and return dictionary with counts of unique items in a list
@@ -113,7 +119,7 @@ def read_gcs_numpy_array(bucket_name, file_name, local_gcs_json_path = cdp.confi
     return np.load(BytesIO(bytearray(blob.download_as_string())))
 
 
-def save_np_array_to_gsc(np_array, bucket_name, file_name, local_gcs_json_path = cdp.config_gcs_auth_json_path):
+def save_np_array_to_gsc(np_array, bucket_name, file_name, local_gcs_json_path = cdp.config_gcs_auth_json_path, print_ts = True):
     """
     Save numpy array to Google Cloud Storage bucket as .npy file.
     Writes a temporary file to your local system, uploads to GCS, and removes from local.
@@ -122,6 +128,7 @@ def save_np_array_to_gsc(np_array, bucket_name, file_name, local_gcs_json_path =
         bucket_name (str): name of Google Cloud Storage bucket
         file_name (str): file name of csv object in bucket
         local_gcs_json_path (str): path on local system to Google Cloud json authentication file
+        print_ts (boolean): if True, print timestamp message. defaults to True.
     """
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = local_gcs_json_path
     client = storage.Client()
