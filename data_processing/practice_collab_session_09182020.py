@@ -25,6 +25,13 @@ import src.misc_functions as mf
 
 
 
+### Non-Code Discussion Items
+###############################################################################
+
+# image classes (cdp.config_obj_detection_classes)
+# in progress file writing to Google Storage Bucket
+
+
 ### Discuss Internal Modules (src folder)
 ###############################################################################
 
