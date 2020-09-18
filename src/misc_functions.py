@@ -18,6 +18,10 @@ from tensorflow.keras.preprocessing.image import load_img
 import time
 from skimage.transform import resize
 
+# Import Project Modules
+import src.config_data_processing as cdp
+import src.image_manipulation as imm
+
 
 ### Define Functions and Classes
 ###############################################################################
@@ -57,7 +61,7 @@ def create_folder_if_not_existing(folder_path):
 
 
 
-def read_gcs_csv_to_pandas(bucket_name, file_name, encoding = 'utf-8', header = 'infer', nrows = None):
+def read_gcs_csv_to_pandas(bucket_name, file_name, encoding = 'utf-8', header = 'infer', nrows = None, local_gcs_json_path = cdp.config_gcs_auth_json_path):
     """
     Read a csv file from a Google Cloud bucket to a local pandas.DataFrame() object
     Args:
@@ -65,7 +69,9 @@ def read_gcs_csv_to_pandas(bucket_name, file_name, encoding = 'utf-8', header = 
         file_name (str): file name of csv object in bucket
         encoding (str): encoding of csv object. defaults to 'utf-8'
         header (str | int): header argument passed to pandas.read_csv(). defaults to 'infer'
+        local_gcs_json_path (str): path on local system to Google Cloud json authentication file
     """
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = local_gcs_json_path
     client = storage.Client()
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(file_name)
@@ -74,36 +80,40 @@ def read_gcs_csv_to_pandas(bucket_name, file_name, encoding = 'utf-8', header = 
     return pd.read_csv(data, header = header, nrows = nrows)
 
 
-def write_csv_to_gcs(dframe, bucket_name, file_name):
+def write_csv_to_gcs(dframe, bucket_name, file_name, local_gcs_json_path = cdp.config_gcs_auth_json_path):
     """
     Write a csv file to a Google Cloud bucket from a local pandas.DataFrame() object
     Args:
         dframe (pandas.DataFrame): pandas DataFrame object to store in google cloud storage bucket
         bucket_name (str): name of Google Cloud Storage bucket
         file_name (str): file name of csv object in bucket
+        local_gcs_json_path (str): path on local system to Google Cloud json authentication file
     """
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = local_gcs_json_path
     client = storage.Client()
     bucket = client.bucket(bucket_name)
     bucket.blob(file_name).upload_from_string(dframe.to_csv(index = False), 'text/csv')
     print_timestamp_message(f'file {file_name} written to Google Cloud Storage Bucket {bucket_name}')
     
 
-def read_gcs_numpy_array(bucket_name, file_name):
+def read_gcs_numpy_array(bucket_name, file_name, local_gcs_json_path = cdp.config_gcs_auth_json_path):
     """
     Read a numpy array (.npy file) from a Google Cloud Storage Bucket
     Args:
         bucket_name (str): name of Google Cloud Storage bucket
         file_name (str): file name of .npy file in bucket
+        local_gcs_json_path (str): path on local system to Google Cloud json authentication file
     Returns:
         numpy array
     """
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = local_gcs_json_path
     client = storage.Client()
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(file_name)
     return np.load(BytesIO(bytearray(blob.download_as_string())))
 
 
-def save_np_array_to_gsc(np_array, bucket_name, file_name):
+def save_np_array_to_gsc(np_array, bucket_name, file_name, local_gcs_json_path = cdp.config_gcs_auth_json_path):
     """
     Save numpy array to Google Cloud Storage bucket as .npy file.
     Writes a temporary file to your local system, uploads to GCS, and removes from local.
@@ -111,7 +121,9 @@ def save_np_array_to_gsc(np_array, bucket_name, file_name):
         np_array (numpy.array): numpy array to save in GCS
         bucket_name (str): name of Google Cloud Storage bucket
         file_name (str): file name of csv object in bucket
+        local_gcs_json_path (str): path on local system to Google Cloud json authentication file
     """
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = local_gcs_json_path
     client = storage.Client()
     bucket = client.bucket(bucket_name)
     with tempfile.NamedTemporaryFile() as temp:
@@ -123,31 +135,14 @@ def save_np_array_to_gsc(np_array, bucket_name, file_name):
     print_timestamp_message(f'file {file_name} written to Google Cloud Storage Bucket {bucket_name}')
     
 
-def save_np_array_to_gsc_local_path(np_array, bucket_name, file_name, local_folder):
-    """
-    Save numpy array to Google Cloud Storage bucket as .npy file.
-    Writes a temporary file to your local system, uploads to GCS, and removes from local.
-    Args:
-        np_array (numpy.array): numpy array to save in GCS
-        bucket_name (str): name of Google Cloud Storage bucket
-        file_name (str): file name of csv object in bucket
-    """
-    client = storage.Client()
-    bucket = client.bucket(bucket_name)
-    temp_name = f'{local_folder}{file_name}'
-    np.save(temp_name, np_array)
-    blob = bucket.blob(file_name)
-    blob.upload_from_filename(temp_name)
-    os.remove(temp_name)
-    print_timestamp_message(f'file {file_name} written to Google Cloud Storage Bucket {bucket_name}')
-    
-
-def list_gcs_bucket_files(bucket_name):
+def list_gcs_bucket_files(bucket_name, local_gcs_json_path = cdp.config_gcs_auth_json_path):
     """
     List file names in GCS bucket
     Args:
         bucket_name (str): name of Google Cloud Storage bucket
+        local_gcs_json_path (str): path on local system to Google Cloud json authentication file
     """
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = local_gcs_json_path
     client = storage.Client()
     bucket = client.get_bucket(bucket_name)
     blob_files = [f for f in bucket.list_blobs()]
@@ -155,15 +150,17 @@ def list_gcs_bucket_files(bucket_name):
     return file_names
 
 
-def gcs_subfolder_exists(bucket_name, subfolder_name):
+def gcs_subfolder_exists(bucket_name, subfolder_name, local_gcs_json_path = cdp.config_gcs_auth_json_path):
     """
     Check whether subfolder exists in a Google Cloud Storage Bucket
     Args:
         bucket_name (str): name of Google Cloud Storage bucket
         subfolder_name (str): name of subfolder to check for
+        local_gcs_json_path (str): path on local system to Google Cloud json authentication file
     Returns:
         boolean
     """
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = local_gcs_json_path
     file_names = list_gcs_bucket_files(bucket_name)
     subfolder_file_names = [x for x in file_names if f'/{subfolder_name}/' in x]
     return len(subfolder_file_names) > 0
