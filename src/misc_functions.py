@@ -57,7 +57,7 @@ def create_folder_if_not_existing(folder_path):
 
 
 
-def read_gcs_csv_to_pandas(bucket_name, file_name, encoding = 'utf-8', header = 'infer'):
+def read_gcs_csv_to_pandas(bucket_name, file_name, encoding = 'utf-8', header = 'infer', nrows = None):
     """
     Read a csv file from a Google Cloud bucket to a local pandas.DataFrame() object
     Args:
@@ -71,7 +71,7 @@ def read_gcs_csv_to_pandas(bucket_name, file_name, encoding = 'utf-8', header = 
     blob = bucket.blob(file_name)
     content = blob.download_as_string()
     data = StringIO(str(content, encoding))
-    return pd.read_csv(data, header = header)
+    return pd.read_csv(data, header = header, nrows = nrows)
 
 
 def write_csv_to_gcs(dframe, bucket_name, file_name):
