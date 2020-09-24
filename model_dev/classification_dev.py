@@ -42,62 +42,17 @@ import src.modeling as m
 
 ### Retrieve & Process Class Data
 ###############################################################################   
-# Pull Countertop Data from GCS
-use_class = 'Countertop'
-image_retriever = imm.OpenCVImageClassRetriever(class_name = use_class)
-train_x_countertop, train_y_countertop = image_retriever.get_training_data()
+class_processor = imm.OpenCVMultiClassProcessor(class_list = ['Lamp', 'Studio couch', 'Chest of drawers'], max_images = 3000)
 
 
-# Pull Mirror Data from GCS
-use_class = 'Mirror'
-image_retriever = imm.OpenCVImageClassRetriever(class_name = use_class)
-train_x_mirror, train_y_mirror = image_retriever.get_training_data()
-
-# Pull Mirror Data from GCS
-use_class = 'Stairs'
-image_retriever = imm.OpenCVImageClassRetriever(class_name = use_class)
-train_x_stairs, train_y_stairs = image_retriever.get_training_data()
-
-
-
-### Combine and Prep Class Data
-###############################################################################
-# Combine into X and Y Arrays
-y = ['Countertop' for x in range(train_x_countertop.shape[0])] + ['Mirror' for x in range(train_x_mirror.shape[0])] +  ['Stairs' for x in range(train_x_stairs.shape[0])]
-x = np.vstack([train_x_countertop, train_x_mirror, train_x_stairs])
-
-# Delete Objects from Memory
-del train_x_countertop; del train_x_mirror; del train_x_stairs
-del train_y_countertop; del train_y_mirror; del train_y_stairs
-
-# Shuffle Randomly
-x, y = m.shuffle_two_lists(x, y)
-
-# Limit to Just 1000 Images
-x = x[:1000]
-y = y[:1000]
-
-# Split into Train, Test, and Validation
-train_x, test_x, train_y, test_y = train_test_split(x, y, test_size = 0.4, random_state = 9242020)
-valid_x, test_x, valid_y, test_y = train_test_split(x, y, test_size = 0.5, random_state = 9242020)
-
-# Convert Lists to Arrays
-train_x = np.array(train_x)
-test_x = np.array(test_x)
-valid_x = np.array(valid_x)
-
-#train_y = np.array(train_y)
-#test_y = np.array(test_y)
-#valid_y = np.array(valid_y)
-
-# Convert Strings in Y to Numbers
-class_list, class_weights = m.make_class_weight_dict(list(train_y), return_dict = False)
-class_list_int_dict = dict(zip(class_list, list(range(len(class_list)))))
-train_y = np.vstack([class_list_int_dict.get(s) for s in train_y])
-test_y = np.vstack([class_list_int_dict.get(s) for s in test_y])
-valid_y = np.vstack([class_list_int_dict.get(s) for s in valid_y])
-
-
+proc_data_dict = class_processor.get_train_test_valid_data()
+train_x = proc_data_dict.get('TRAIN X')
+test_x = proc_data_dict.get('TEST X')
+valid_x = proc_data_dict.get('VALIDATION X')
+train_y = proc_data_dict.get('TRAIN Y')
+test_y = proc_data_dict.get('TEST Y')
+valid_y = proc_data_dict.get('VALIDATION Y')
+class_weight_dict = proc_data_dict.get('CLASS WEIGHT DICT')
 
 
 ### Define Keras Configuration
@@ -137,7 +92,7 @@ csv_name = "log_{ts}.csv".format(ts = m.config_model_timestamp)
 csv_logger = keras.callbacks.CSVLogger(csv_name)
 
 # Define model, scale to multiple GPUs, and start training
-model = m.conv_10_layer()
+model = m.resnet_conv_50_layer(n_classes = 3)
 model.compile(loss='categorical_crossentropy',
               optimizer = m.Adam(),
               metrics = ['categorical_accuracy'])
@@ -149,26 +104,8 @@ model.fit(train_gen,
           steps_per_epoch = tsteps,
           callbacks = [check_point, early_stop],
           #callbacks = [check_point, early_stop, lr_schedule.lr_scheduler(), csv_logger],
-          class_weight = dict(zip(list(range(len(class_weights))), class_weights)))
+          class_weight = class_weight_dict)
 
 train_end_time = time.time()
 m.sec_to_time_elapsed(train_end_time, train_start_time)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

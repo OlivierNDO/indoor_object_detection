@@ -56,7 +56,7 @@ config_model_save_name = "cloud_scene_img_model_sgd_lrs_{dt_tm}.hdf5".format(dt_
 config_max_worse_epochs = 25
 
 # Model training config
-config_batch_size = 4
+config_batch_size = 20
 config_warmup_epochs = 5
 config_cooldown_epochs = 5
 config_cycle_length = 10
@@ -860,6 +860,41 @@ def shuffle_two_lists(list_a, list_b):
     a_shuffled = index_slice_list(lst = list_a, indices = shuffle_indices)
     b_shuffled = index_slice_list(lst = list_b, indices = shuffle_indices)
     return a_shuffled, b_shuffled
+
+
+def shuffle_three_lists(list_a, list_b, list_c):
+    """
+    Randomly shuffle two lists with the same order, return numpy arrays
+    Args:
+        list_a: first list you want to shuffle
+        list_b: second list you want to shuffle
+        list_c: third list you want to shuffle
+    Dependencies:
+        numpy (import as np)
+        operator.itemgetter
+        random
+    """
+    assert len(list_a) == len(list_b) == len(list_c), "three input lists must have the same length"
+    
+    # Define inner function
+    def index_slice_list(lst, indices):
+    # Slice list by list of indices
+        list_slice = itemgetter(*indices)(lst)
+        if len(indices) == 1:
+            return [list_slice]
+        else:
+            return list(list_slice)
+    
+    # Randomly shuffle positional indices
+    shuffle_indices = [i for i in range(len(list_a))]
+    random.shuffle(shuffle_indices)
+    
+    # Reorder and return lists
+    a_shuffled = index_slice_list(lst = list_a, indices = shuffle_indices)
+    b_shuffled = index_slice_list(lst = list_b, indices = shuffle_indices)
+    c_shuffled = index_slice_list(lst = list_c, indices = shuffle_indices)
+    return a_shuffled, b_shuffled, c_shuffled
+
 
 
 

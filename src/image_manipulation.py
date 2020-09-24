@@ -18,6 +18,7 @@ import requests
 import tempfile
 from tensorflow.keras.preprocessing.image import load_img
 import time
+from sklearn.model_selection import train_test_split
 from skimage.transform import resize
 import tqdm
 
@@ -320,9 +321,115 @@ class OpenCVImageClassRetriever:
         return train_x, train_y
 
 
+def make_class_weight_dict(train_y_labels, return_dict = False):
+    """
+    Return dictionary of inverse class weights for imbalanced response
+    Args:
+        train_y_labels: training set response variable (list or numpy array)
+        return_dict: if True, return dictionary of classes & weights..else return list of classes and list of weights
+    """
+    
+    if str(type(train_y_labels)) == "<class 'numpy.ndarray'>":
+        labs = list(range(train_y_labels.shape[1]))
+        freq = list(np.sum(train_y_labels, axis = 0))
+        train_class_counts = dict(zip(labs, freq))
+    else:
+        train_class_counts = dict((x,train_y_labels.count(x)) for x in set(train_y_labels))
+    max_class = max(train_class_counts.values())
+    class_weights = [max_class / x for x in train_class_counts.values()]
+    class_weight_dict = dict(zip([i for i in train_class_counts.keys()], class_weights))
+    if return_dict:
+        return class_weight_dict
+    else:
+        return list(class_weight_dict.keys()), list(class_weight_dict.values())
 
 
+class OpenCVMultiClassProcessor:
+    """
+    Wrapper around OpenCVImageClassRetriever() class to retrieve and process
+    images and bounding boxes from multiple classes
+    """
+    
+    def __init__(self, 
+                 class_list,
+                 max_images = None,
+                 random_state = 9242020,
+                 #shuffle = True,
+                 test_size = 0.2):
+        # Initialize Arguments
+        self.class_list = class_list
+        self.max_images = max_images
+        self.random_state = random_state
+        #self.shuffle = shuffle
+        self.test_size = test_size
+        
+    
+    def get_processed_data(self):
+        # Retrieve Images, Classification Array, and Bounding Boxes for Multiple Classes
+        x_img_list = []
+        y_bbox_list = []
+        y_classif_list = []
+        
+        # Loop Over Image CLasses to Retrieve Data
+        for i, x in enumerate(self.class_list):
+            mf.print_timestamp_message(f"Pulling data for class '{x}' ({i+1} of {len(self.class_list)}) from Google Cloud Storage")
+            image_retriever = OpenCVImageClassRetriever(class_name = x)
+            x_img, y_bbox = image_retriever.get_training_data()
+            x_img_list.append(x_img)
+            y_bbox_list.append(y_bbox)
+            y_classif_list.append([x] * x_img.shape[0])
+        
+        # Concatenate / Unnest Outer Lists
+        x_img_list = np.vstack(x_img_list)
+        y_bbox_list = np.vstack(y_bbox_list)
+        y_classif_list = mf.unnest_list_of_lists(y_classif_list)
+        
+        # Conditionally Shuffle and Limit Number of Images
+        #if self.shuffle:
+        #    x_img_list, y_bbox_list, y_classif_list = shuffle_three_lists(x_img_list, y_bbox_list, y_classif_list)
+        #if self.max_images:
+        #    x_img_list, y_bbox_list, y_classif_list = x_img_list[:self.max_images], y_bbox_list[:self.max_images], y_classif_list[:self.max_images]
+            
+        return x_img_list, y_bbox_list, y_classif_list
+    
+    def get_train_test_valid_data(self):
+        # Retrieve Images, Classification Array, and Bounding Boxes for Multiple Classes
+        x_img_list, y_bbox_list, y_classif_list = self.get_processed_data()
+        
+        # Split into Train and Test
+        train_x, test_x, \
+        train_y_bbox, test_y_bbox, \
+        train_y_classif, test_y_classif = train_test_split(x_img_list, y_bbox_list, y_classif_list,
+                                                           test_size = self.test_size * 2,
+                                                           random_state = self.random_state)
+        # Split Test in Half -> Test & Validation
+        valid_x, test_x, \
+        valid_y_bbox, test_y_bbox, \
+        valid_y_classif, test_y_classif = train_test_split(test_x, test_y_bbox, test_y_classif,
+                                                           test_size = 0.5,
+                                                           random_state = self.random_state)
+        
+        # Create Class Weight Dictionary & Convert Strings in Y to Numbers
+        class_list, class_weights = make_class_weight_dict(list(train_y_classif), return_dict = False)
+        class_weight_dict = dict(zip(list(range(len(class_weights))), class_weights))
+        class_list_int_dict = dict(zip(class_list, list(range(len(class_list)))))
+        train_y_classif = np.vstack([class_list_int_dict.get(s) for s in train_y_classif])
+        test_y_classif = np.vstack([class_list_int_dict.get(s) for s in test_y_classif])
+        valid_y_classif = np.vstack([class_list_int_dict.get(s) for s in valid_y_classif])
 
+        
+        
+        
+        # Create and Return Dictionary
+        dict_keys = ['TRAIN X', 'TEST X', 'VALIDATION X',
+                     'TRAIN BBOX', 'TEST BBOX', 'VALIDATION BBOX',
+                     'TRAIN Y', 'TEST Y', 'VALIDATION Y',
+                     'CLASS WEIGHT DICT']
+        dict_values = [train_x[:self.max_images], test_x[:self.max_images], valid_x[:self.max_images],
+                       train_y_bbox[:self.max_images], test_y_bbox[:self.max_images], valid_y_bbox[:self.max_images],
+                       train_y_classif[:self.max_images], test_y_classif[:self.max_images], valid_y_classif[:self.max_images],
+                       class_weight_dict]
+        return dict(zip(dict_keys, dict_values))
 
 
 
