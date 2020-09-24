@@ -35,9 +35,10 @@ from tensorflow.keras import layers
 import src.config_data_processing as cdp
 import src.image_manipulation as imm
 import src.misc_functions as mf
+import src.modeling as m
 
 
-### Retrieve & Process Data: Countertops
+### Retrieve & Process Class Data
 ###############################################################################   
 # Pull Countertop Data from GCS
 use_class = 'Countertop'
@@ -51,8 +52,35 @@ image_retriever = imm.OpenCVImageClassRetriever(class_name = use_class)
 train_x_mirror, train_y_mirror = image_retriever.get_training_data()
 
 
+### Combine Class Data
+###############################################################################
+y = ['Countertop' for x in range(train_x_countertop.shape[0])] + ['Mirror' for x in range(train_x_mirror.shape[0])]
+x = np.vstack([train_x_countertop, train_x_mirror])
 
 
+
+tsteps = int(train_x.shape[0]) // m.config_batch_size
+#vsteps = int(valid_x.shape[0]) // config_batch_size
+
+
+
+
+
+class_list, class_weights = m.make_class_weight_dict(train_y, return_dict = False)
+train_gen = m.np_array_to_batch_gen_aug(train_x, train_y)
+#valid_gen = m.np_array_to_batch_gen(valid_x, valid_y)
+#test_gen = np_array_to_batch_gen(test_x, test_y)
+
+
+lr_schedule = m.CyclicalRateSchedule(min_lr = m.config_min_lr, max_lr = m.config_max_lr,
+                                   n_epochs = m.config_epochs,
+                                   warmup_epochs = m.config_warmup_epochs,
+                                   cooldown_epochs = m.config_cooldown_epochs,
+                                   cycle_length = m.config_cycle_length,
+                                   logarithmic = True,
+                                   decrease_factor = 0.9)
+
+lr_schedule.plot_cycle()
 
 
 
