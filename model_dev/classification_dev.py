@@ -60,8 +60,15 @@ train_x_mirror, train_y_mirror = image_retriever.get_training_data()
 y = ['Countertop' for x in range(train_x_countertop.shape[0])] + ['Mirror' for x in range(train_x_mirror.shape[0])]
 x = np.vstack([train_x_countertop, train_x_mirror])
 
+# Delete Objects from Memory
+del train_x_countertop; del train_x_mirror; del train_y_countertop; del train_y_mirror;
+
 # Shuffle Randomly
 x, y = m.shuffle_two_lists(x, y)
+
+# Limit to Just 500 Images
+x = x[:500]
+y = y[:500]
 
 # Split into Train, Test, and Validation
 train_x, test_x, train_y, test_y = train_test_split(x, y, test_size = 0.4, random_state = 9242020)
@@ -133,7 +140,7 @@ model.fit(train_gen,
           validation_data = valid_gen,
           validation_steps = vsteps,
           steps_per_epoch = tsteps,
-          callbacks = [early_stop],
+          callbacks = [check_point, early_stop],
           #callbacks = [check_point, early_stop, lr_schedule.lr_scheduler(), csv_logger],
           class_weight = dict(zip(list(range(len(class_weights))), class_weights)))
 
