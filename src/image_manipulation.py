@@ -295,7 +295,28 @@ class OpenCVImageClassRetriever:
         csv_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_class_save_name}'
         class_desc_df = mf.read_gcs_csv_to_pandas(bucket_name = self.bucket_name, file_name = csv_save_name)
         return class_desc_df
-
+    
+    def get_training_data(self):
+        # Retrieve Class Image Array, Bounding Box DataFrame, and Description DataFrame
+        img_arr = self.get_class_image_array()
+        bbox_df = self.get_bounding_box_df()
+        desc_df = self.get_class_desc_df()
+        
+        # Multiply Bounding Box Floats to Get Pixel Positions
+        bbox_df_copy = bbox_df.copy()
+        bbox_df_copy['XMin'] = [int(x * img_arr.shape[-2]) for x in bbox_df['XMin']]
+        bbox_df_copy['XMax'] = [int(x * img_arr.shape[-2]) for x in bbox_df['XMax']]
+        bbox_df_copy['YMin'] = [int(x * img_arr.shape[-2]) for x in bbox_df['YMin']]
+        bbox_df_copy['YMax'] = [int(x * img_arr.shape[-2]) for x in bbox_df['YMax']]
+        
+        # Generate Training Datasets (X and Y)
+        unique_image_ids = list(set(desc_df['ImageID']))
+        image_ids = list(bbox_df_copy['ImageID'])
+        y_array_list = mf.unnest_list_of_lists([bbox_df_copy[bbox_df_copy.ImageID == x][['XMin', 'XMax', 'YMin', 'YMax']].values.tolist() for x in unique_image_ids])
+        img_array_positions = mf.unnest_list_of_lists([[i for i,x in enumerate(unique_image_ids) if x == z] for z in image_ids])
+        train_x = np.array([img_arr[i] for i in img_array_positions])
+        train_y = np.array(y_array_list)
+        return train_x, train_y
 
 
 

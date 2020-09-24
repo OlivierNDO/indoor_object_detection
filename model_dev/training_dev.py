@@ -30,7 +30,7 @@ import src.image_manipulation as imm
 import src.misc_functions as mf
 
 
-### Retrieve & Process Data
+### Retrieve & Process Data: Countertops
 ###############################################################################   
 # Pull Countertop Data from GCS
 use_class = 'Countertop'
@@ -57,6 +57,33 @@ img_array_positions = mf.unnest_list_of_lists([[i for i,x in enumerate(unique_im
 
 train_x = np.array([img_arr[i] for i in img_array_positions])
 train_y = np.array(y_array_list)
+
+
+
+
+
+
+
+# train_imgs, classes_count, class_mapping = get_data(train_path)
+# data_gen_train = get_anchor_gt(train_imgs, C, get_img_output_length, mode='train')
+# calc_rpn
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #train_x = train_x.reshape(train_x.shape[0], -1)
 
