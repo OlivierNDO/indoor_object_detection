@@ -53,22 +53,29 @@ use_class = 'Mirror'
 image_retriever = imm.OpenCVImageClassRetriever(class_name = use_class)
 train_x_mirror, train_y_mirror = image_retriever.get_training_data()
 
+# Pull Mirror Data from GCS
+use_class = 'Stairs'
+image_retriever = imm.OpenCVImageClassRetriever(class_name = use_class)
+train_x_stairs, train_y_stairs = image_retriever.get_training_data()
+
+
 
 ### Combine and Prep Class Data
 ###############################################################################
 # Combine into X and Y Arrays
-y = ['Countertop' for x in range(train_x_countertop.shape[0])] + ['Mirror' for x in range(train_x_mirror.shape[0])]
-x = np.vstack([train_x_countertop, train_x_mirror])
+y = ['Countertop' for x in range(train_x_countertop.shape[0])] + ['Mirror' for x in range(train_x_mirror.shape[0])] +  ['Stairs' for x in range(train_x_stairs.shape[0])]
+x = np.vstack([train_x_countertop, train_x_mirror, train_x_stairs])
 
 # Delete Objects from Memory
-del train_x_countertop; del train_x_mirror; del train_y_countertop; del train_y_mirror;
+del train_x_countertop; del train_x_mirror; del train_x_stairs
+del train_y_countertop; del train_y_mirror; del train_y_stairs
 
 # Shuffle Randomly
 x, y = m.shuffle_two_lists(x, y)
 
-# Limit to Just 500 Images
-x = x[:500]
-y = y[:500]
+# Limit to Just 1000 Images
+x = x[:1000]
+y = y[:1000]
 
 # Split into Train, Test, and Validation
 train_x, test_x, train_y, test_y = train_test_split(x, y, test_size = 0.4, random_state = 9242020)
