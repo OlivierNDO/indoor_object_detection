@@ -5,6 +5,7 @@ import collections
 import datetime
 from google.cloud import storage
 from io import BytesIO, StringIO
+from operator import itemgetter
 import itertools
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
@@ -29,6 +30,21 @@ import src.image_manipulation as imm
 def unnest_list_of_lists(LOL):
     """unnest list of lists"""
     return list(itertools.chain.from_iterable(LOL))
+
+def index_slice_list(lst, indices):
+    """
+    Slice a list by a list of indices (positions)
+    Args:
+        lst (list): list to subset
+        indices (list): positions to use in subsetting lst
+    Returns:
+        list
+    """
+    list_slice = itemgetter(*indices)(lst)
+    if len(indices) == 1:
+        return [list_slice]
+    else:
+        return list(list_slice)
 
 
 def get_unique_count_dict(lst):

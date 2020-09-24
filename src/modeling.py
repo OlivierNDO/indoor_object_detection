@@ -56,14 +56,14 @@ config_model_save_name = "cloud_scene_img_model_sgd_lrs_{dt_tm}.hdf5".format(dt_
 config_max_worse_epochs = 25
 
 # Model training config
-config_batch_size = 30
+config_batch_size = 4
 config_warmup_epochs = 5
 config_cooldown_epochs = 5
 config_cycle_length = 10
 config_sgd_lr = 0.0003
 config_min_lr = 0.00001
 config_max_lr = 0.00015
-config_epochs = 400
+config_epochs = 15
 config_cnn_activation = 'relu'
 config_dense_dropout = 0.1
 config_conv_dropout = 0.0

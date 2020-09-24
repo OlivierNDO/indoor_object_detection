@@ -6,6 +6,7 @@ import collections
 import datetime
 from google.cloud import storage
 from io import BytesIO, StringIO
+from operator import itemgetter
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import matplotlib.patches as patches
