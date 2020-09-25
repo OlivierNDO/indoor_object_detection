@@ -5,6 +5,7 @@
 
 
 # Next Steps (project):
+#   Create folders with fewer imgaes per class
 #   Add functionality to make classification only use subset of image with object
 #   Use sliding window to turn classification model into object detection
 #   https://www.pyimagesearch.com/2020/06/22/turning-any-cnn-image-classifier-into-an-object-detector-with-keras-tensorflow-and-opencv/
@@ -66,6 +67,9 @@ import src.modeling as m
 class_processor = imm.OpenCVMultiClassProcessor(class_list = ['Piano', 'Computer monitor', 'Kitchen & dining room table'], max_images = 3000)
 
 
+
+
+
 proc_data_dict = class_processor.get_train_test_valid_data()
 train_x = proc_data_dict.get('TRAIN X')
 test_x = proc_data_dict.get('TEST X')
@@ -74,6 +78,13 @@ train_y = proc_data_dict.get('TRAIN Y')
 test_y = proc_data_dict.get('TEST Y')
 valid_y = proc_data_dict.get('VALIDATION Y')
 class_weight_dict = proc_data_dict.get('CLASS WEIGHT DICT')
+
+
+temp = proc_data_dict.get('TRAIN X')
+nan = [i for i, x in enumerate(temp) if np.isnan(np.sum(x))]
+temp2 = temp[nan]
+
+plt.imshow(temp2[10])
 
 
 ### Remove Arrays with All Zeroes (black images... will break neural net)
