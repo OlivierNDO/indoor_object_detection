@@ -32,6 +32,15 @@ import tqdm
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, Dropout, Flatten, Dense, Activation, BatchNormalization, GlobalAvgPool2D
+from tensorflow.keras.layers import Add, ZeroPadding2D, AveragePooling2D, GaussianNoise, SeparableConv2D
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img
+from tensorflow.keras.layers import add
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.callbacks import LearningRateScheduler, ReduceLROnPlateau
+from tensorflow.keras.optimizers import Adam
 
 # Import Project Modules
 import src.config_data_processing as cdp
@@ -55,6 +64,34 @@ valid_y = proc_data_dict.get('VALIDATION Y')
 class_weight_dict = proc_data_dict.get('CLASS WEIGHT DICT')
 
 
+### Remove Arrays with All Zeroes (black images... will break neural net)
+###############################################################################
+# Training Set
+train_nan = [i for i, x in enumerate(train_x) if np.isnan(np.sum(x))]
+train_not_nan = [i for i in range(train_x.shape[0]) if i not in train_nan]
+train_x = train_x[train_not_nan]
+train_y = train_y[train_not_nan]
+
+# Validation Set
+valid_nan = [i for i, x in enumerate(valid_x) if np.isnan(np.sum(x))]
+valid_not_nan = [i for i in range(valid_x.shape[0]) if i not in valid_nan]
+valid_x = valid_x[valid_not_nan]
+valid_y = valid_y[valid_not_nan]
+
+# Test Set
+test_nan = [i for i, x in enumerate(test_x) if np.isnan(np.sum(x))]
+test_not_nan = [i for i in range(test_x.shape[0]) if i not in test_nan]
+test_x = test_x[test_not_nan]
+test_y = test_y[test_not_nan]
+
+
+### One-Hot Encode Y-Values
+###############################################################################
+train_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(train_y))] for t in train_y])
+test_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(test_y))] for t in test_y])
+valid_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(valid_y))] for t in valid_y])
+
+
 ### Define Keras Configuration
 ###############################################################################
 
@@ -63,16 +100,16 @@ tsteps = int(train_x.shape[0]) // m.config_batch_size
 vsteps = int(valid_x.shape[0]) // m.config_batch_size
 
 
-train_gen = m.np_array_to_batch_gen_aug(train_x, train_y)
-valid_gen = m.np_array_to_batch_gen(valid_x, valid_y)
-test_gen = m.np_array_to_batch_gen(test_x, test_y)
+#train_gen = m.np_array_to_batch_gen_aug(train_x, train_y)
+#valid_gen = m.np_array_to_batch_gen(valid_x, valid_y)
+#test_gen = m.np_array_to_batch_gen(test_x, test_y)
 
 
 lr_schedule = m.CyclicalRateSchedule(min_lr = m.config_min_lr, max_lr = m.config_max_lr,
                                    n_epochs = m.config_epochs,
-                                   warmup_epochs = m.config_warmup_epochs,
-                                   cooldown_epochs = m.config_cooldown_epochs,
-                                   cycle_length = m.config_cycle_length,
+                                   warmup_epochs = 1,
+                                   cooldown_epochs = 1,
+                                   cycle_length = 4,
                                    logarithmic = True,
                                    decrease_factor = 0.9)
 
@@ -94,18 +131,40 @@ csv_logger = keras.callbacks.CSVLogger(csv_name)
 # Define model, scale to multiple GPUs, and start training
 model = m.resnet_conv_50_layer(n_classes = 3)
 model.compile(loss='categorical_crossentropy',
-              optimizer = m.Adam(),
+              optimizer = Adam(),
               metrics = ['categorical_accuracy'])
 
-model.fit(train_gen,
-          epochs = m.config_epochs,
-          validation_data = valid_gen,
-          validation_steps = vsteps,
+model.fit(train_x, train_y,
+          #train_gen,
+          epochs = 15,
+          #validation_data = valid_gen,
+          validation_data = (valid_x, valid_y),
+          #validation_steps = vsteps,
           steps_per_epoch = tsteps,
-          callbacks = [check_point, early_stop],
+          callbacks = [check_point, early_stop, lr_schedule.lr_scheduler()],
           #callbacks = [check_point, early_stop, lr_schedule.lr_scheduler(), csv_logger],
           class_weight = class_weight_dict)
 
 train_end_time = time.time()
 m.sec_to_time_elapsed(train_end_time, train_start_time)
+
+
+### Model Test Set Prediction
+###############################################################################
+
+#cnn_model = keras.models.load_model(m.config_model_save_name)
+
+pred_values = model.predict(test_x)
+
+
+
+
+
+
+
+
+
+
+
+
 
