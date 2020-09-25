@@ -4,6 +4,17 @@
 # and runs a basic classification task on mirrors vs. countertops
 
 
+# Next Steps (project):
+#   Add functionality to make classification only use subset of image with object
+#   Use sliding window to turn classification model into object detection
+#   https://www.pyimagesearch.com/2020/06/22/turning-any-cnn-image-classifier-into-an-object-detector-with-keras-tensorflow-and-opencv/
+#
+# Next Steps (knowledge sharing):
+#   Build classification model from scratch rather than re-using models from previous G3
+#
+#
+
+
 ### Configuration
 ###############################################################################
 # Import Python Modules
