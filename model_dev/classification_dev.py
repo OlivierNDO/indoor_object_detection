@@ -158,19 +158,10 @@ m.sec_to_time_elapsed(train_end_time, train_start_time)
 saved_model = keras.models.load_model(m.config_model_save_name)
 pred_values = saved_model.predict(test_x)
 
-# Accuracy on Test Set
-true_pos = [int(pred_values[i,np.argmax(test_y[i])] >= 0.5) for i in range(test_y.shape[0])]
-true_neg = mf.unnest_list_of_lists([[int(y < 0.5) for i, y in enumerate(pred_values[r,:]) if i != np.argmax(test_y[r])] for r in range(test_y.shape[0])])
-true_agg = true_pos + true_neg
-tpr = sum(true_pos) / len(true_pos)
-tnr = sum(true_neg) / len(true_neg)
-acc = sum(true_agg) / len(true_agg)
-pd.DataFrame({'accuracy' : [acc], 'true positive rate' : [tpr], 'true negative rate' : [tnr]})
-
 
 
 # Look at Some Predictions
-def temp_plot_test_obs(n = 90):
+def temp_plot_test_obs(n = 20):
     for i in range(n):
         random_test_obs = random.choice(list(range(test_x.shape[0])))
         class_dict = {0 : 'Kitchen & dining room table', 1 : "Piano", 2 : "Computer monitor"}
@@ -182,6 +173,15 @@ def temp_plot_test_obs(n = 90):
 
 temp_plot_test_obs()
 
+
+# Accuracy on Test Set
+true_pos = [int(pred_values[i,np.argmax(test_y[i])] >= 0.5) for i in range(test_y.shape[0])]
+true_neg = mf.unnest_list_of_lists([[int(y < 0.5) for i, y in enumerate(pred_values[r,:]) if i != np.argmax(test_y[r])] for r in range(test_y.shape[0])])
+true_agg = true_pos + true_neg
+tpr = sum(true_pos) / len(true_pos)
+tnr = sum(true_neg) / len(true_neg)
+acc = sum(true_agg) / len(true_agg)
+pd.DataFrame({'accuracy' : [acc], 'true positive rate' : [tpr], 'true negative rate' : [tnr]})
 
 
 
