@@ -52,7 +52,7 @@ import src.modeling as m
 
 ### Retrieve & Process Class Data
 ###############################################################################   
-class_processor = imm.OpenCVMultiClassProcessor(class_list = ['Lamp', 'Studio couch', 'Chest of drawers'], max_images = 3000)
+class_processor = imm.OpenCVMultiClassProcessor(class_list = ['Piano', 'Computer monitor', 'Kitchen & dining room table'], max_images = 3000)
 
 
 proc_data_dict = class_processor.get_train_test_valid_data()
@@ -156,14 +156,28 @@ m.sec_to_time_elapsed(train_end_time, train_start_time)
 ###############################################################################
 pred_values = model.predict(test_x)
 
+# Accuracy on Test Set
+true_pos = [int(pred_values[i,np.argmax(test_y[i])] >= 0.5) for i in range(test_y.shape[0])]
+true_neg = mf.unnest_list_of_lists([[int(y < 0.5) for i, y in enumerate(pred_values[r,:]) if i != np.argmax(test_y[r])] for r in range(test_y.shape[0])])
+true_agg = true_pos + true_neg
+tpr = sum(true_pos) / len(true_pos)
+tnr = sum(true_neg) / len(true_neg)
+acc = sum(true_agg) / len(true_agg)
+pd.DataFrame({'accuracy' : [acc], 'true positive rate' : [tpr], 'true negative rate' : [tnr]})
 
 
+# Look at Some Predictions
+def temp_plot_test_obs(n = 10):
+    for i in range(n):
+        random_test_obs = random.choice(list(range(test_x.shape[0])))
+        class_dict = {0 : "Studio Couch", 1 : "Lamp", 2 : "Chest of drawers"}
+        class_probs = [class_dict.get(i) + ":  " + str(round(x*100,5)) + "%" for i, x in enumerate(pred_values[random_test_obs])]
+        actual = class_dict.get(np.argmax(test_y[random_test_obs]))
+        plt.imshow(test_x[random_test_obs])
+        plt.title("Actual: {a}".format(a = actual) + "\n" + "\n".join(class_probs))
+        plt.show()
 
-
-
-
-
-
+temp_plot_test_obs()
 
 
 
