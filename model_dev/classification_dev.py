@@ -168,11 +168,12 @@ acc = sum(true_agg) / len(true_agg)
 pd.DataFrame({'accuracy' : [acc], 'true positive rate' : [tpr], 'true negative rate' : [tnr]})
 
 
+
 # Look at Some Predictions
-def temp_plot_test_obs(n = 10):
+def temp_plot_test_obs(n = 90):
     for i in range(n):
         random_test_obs = random.choice(list(range(test_x.shape[0])))
-        class_dict = {0 : "Studio Couch", 1 : "Lamp", 2 : "Chest of drawers"}
+        class_dict = {0 : 'Kitchen & dining room table', 1 : "Piano", 2 : "Computer monitor"}
         class_probs = [class_dict.get(i) + ":  " + str(round(x*100,5)) + "%" for i, x in enumerate(pred_values[random_test_obs])]
         actual = class_dict.get(np.argmax(test_y[random_test_obs]))
         plt.imshow(test_x[random_test_obs])
