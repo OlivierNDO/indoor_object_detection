@@ -52,8 +52,9 @@ config_sample_perc = None
 
 # Model save & callback config
 config_model_timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-config_model_save_name = "cloud_scene_img_model_sgd_lrs_{dt_tm}.hdf5".format(dt_tm = config_model_timestamp)
-config_max_worse_epochs = 25
+mf.create_folder_if_not_existing(cdp.config_model_save_folder)
+config_model_save_name = f"{cdp.config_model_save_folder}cloud_scene_img_model_sgd_lrs_{config_model_timestamp}.hdf5"
+config_max_worse_epochs = 10
 
 # Model training config
 config_batch_size = 20

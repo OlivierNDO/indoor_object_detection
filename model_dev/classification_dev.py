@@ -111,13 +111,14 @@ tsteps = int(train_x.shape[0]) // m.config_batch_size
 vsteps = int(valid_x.shape[0]) // m.config_batch_size
 
 # Create Learning Rate Schedule
-lr_schedule = m.CyclicalRateSchedule(min_lr = m.config_min_lr, max_lr = m.config_max_lr,
-                                   n_epochs = m.config_epochs,
-                                   warmup_epochs = 1,
-                                   cooldown_epochs = 1,
-                                   cycle_length = 4,
-                                   logarithmic = True,
-                                   decrease_factor = 0.9)
+lr_schedule = m.CyclicalRateSchedule(min_lr = 1e-05,
+                                     max_lr = 0.0005,
+                                     n_epochs = 25,
+                                     warmup_epochs = 1,
+                                     cooldown_epochs = 1,
+                                     cycle_length = 5,
+                                     logarithmic = True,
+                                     decrease_factor = 0.9)
 
 lr_schedule.plot_cycle()
 
@@ -141,11 +142,10 @@ model.compile(loss='categorical_crossentropy',
               metrics = ['categorical_accuracy'])
 
 model.fit(train_x, train_y,
-          epochs = 15,
+          epochs = 25,
           validation_data = (valid_x, valid_y),
           steps_per_epoch = tsteps,
           callbacks = [check_point, early_stop, lr_schedule.lr_scheduler()],
-          #callbacks = [check_point, early_stop, lr_schedule.lr_scheduler(), csv_logger],
           class_weight = class_weight_dict)
 
 train_end_time = time.time()
@@ -154,7 +154,9 @@ m.sec_to_time_elapsed(train_end_time, train_start_time)
 
 ### Model Test Set Prediction
 ###############################################################################
-pred_values = model.predict(test_x)
+# Load Model from Best Epoch
+saved_model = keras.models.load_model(m.config_model_save_name)
+pred_values = saved_model.predict(test_x)
 
 # Accuracy on Test Set
 true_pos = [int(pred_values[i,np.argmax(test_y[i])] >= 0.5) for i in range(test_y.shape[0])]
