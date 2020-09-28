@@ -67,28 +67,51 @@ import src.modeling as m
 class_processor = imm.OpenCVMultiClassProcessor(class_list = ['Piano', 'Computer monitor', 'Kitchen & dining room table'], max_images = 3000)
 
 
-
-
-
 proc_data_dict = class_processor.get_train_test_valid_data()
 train_x = proc_data_dict.get('TRAIN X')
 test_x = proc_data_dict.get('TEST X')
 valid_x = proc_data_dict.get('VALIDATION X')
+train_bbox = proc_data_dict.get('TRAIN BBOX')
+test_bbox = proc_data_dict.get('TEST BBOX')
+test_bbox = proc_data_dict.get('VALIDATION BBOX')
 train_y = proc_data_dict.get('TRAIN Y')
 test_y = proc_data_dict.get('TEST Y')
 valid_y = proc_data_dict.get('VALIDATION Y')
 class_weight_dict = proc_data_dict.get('CLASS WEIGHT DICT')
 
 
-temp = proc_data_dict.get('TRAIN X')
-nan = [i for i, x in enumerate(temp) if np.isnan(np.sum(x))]
-temp2 = temp[nan]
-
-plt.imshow(temp2[10])
-
 
 ### Remove Arrays with All Zeroes (black images... will break neural net)
 ###############################################################################
+
+def remove_blank_images(x_arr, y_arr, bbox_arr):
+    """
+    For ordered pair of x and y arrays, remove arrays with blank images in X
+    Args:
+        x_arr (numpy.array): 4d numpy array (images)
+        y_arr (numpy.array): array or nested list with dependent variable
+        bbox_arr (numpy.array): array of bounding box coordinates
+    Returns:
+        x (numpy.array), y (numpy.array), bbox (numpy array)
+    """
+    nan = [i for i, x in enumerate(x_arr) if np.isnan(np.sum(x))]
+    inf = [i for i, x in enumerate(x_arr) if math.isinf(np.sum(x))]
+    near_zero = [i for i, x in enumerate(x_arr) if (np.sum(x == 0) / np.sum(x != 0)) > 5]
+    remove = list(set(nan + inf + near_zero))
+    keep = [i for i in range(x_arr.shape[0]) if i not in remove]
+    return x_arr[keep], y_arr[keep], bbox_arr[keep]
+
+
+
+    
+
+train_x, train_y, train_bbox = remove_blank_images(train_x, train_y, train_bbox)
+
+
+
+
+
+
 # Training Set
 nan = [i for i, x in enumerate(train_x) if np.isnan(np.sum(x))]
 inf = [i for i, x in enumerate(train_x) if math.isinf(np.sum(x))]
@@ -123,6 +146,23 @@ test_y = test_y[keep]
 train_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(train_y))] for t in train_y])
 test_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(test_y))] for t in test_y])
 valid_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(valid_y))] for t in valid_y])
+
+
+
+
+plt.imshow(train_x[0])
+train_bbox[0][0]
+
+
+
+imm.plot_image_bounding_box(train_x[0],
+                            [train_bbox[0][0]],
+                            [train_bbox[0][1]],
+                            [train_bbox[0][2]],
+                            [train_bbox[0][3]],
+                            'Piano')
+
+
 
 
 ### Define Keras Configuration
@@ -164,7 +204,7 @@ model.compile(loss='categorical_crossentropy',
               metrics = ['categorical_accuracy'])
 
 model.fit(train_x, train_y,
-          epochs = 25,
+          epochs = 1,
           validation_data = (valid_x, valid_y),
           steps_per_epoch = tsteps,
           callbacks = [check_point, early_stop, lr_schedule.lr_scheduler()],

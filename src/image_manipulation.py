@@ -7,6 +7,7 @@ import datetime
 from google.cloud import storage
 from io import BytesIO, StringIO
 from operator import itemgetter
+import math
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import matplotlib.patches as patches
@@ -344,6 +345,24 @@ def make_class_weight_dict(train_y_labels, return_dict = False):
         return list(class_weight_dict.keys()), list(class_weight_dict.values())
 
 
+def remove_blank_images(x_arr, y_arr, bbox_arr):
+    """
+    For ordered pair of x and y arrays, remove arrays with blank images in X
+    Args:
+        x_arr (numpy.array): 4d numpy array (images)
+        y_arr (numpy.array): array or nested list with dependent variable
+        bbox_arr (numpy.array): array of bounding box coordinates
+    Returns:
+        x (numpy.array), y (numpy.array), bbox (numpy array)
+    """
+    nan = [i for i, x in enumerate(x_arr) if np.isnan(np.sum(x))]
+    inf = [i for i, x in enumerate(x_arr) if math.isinf(np.sum(x))]
+    near_zero = [i for i, x in enumerate(x_arr) if (np.sum(x == 0) / np.sum(x != 0)) > 5]
+    remove = list(set(nan + inf + near_zero))
+    keep = [i for i in range(x_arr.shape[0]) if i not in remove]
+    return x_arr[keep], y_arr[keep], bbox_arr[keep]
+
+
 class OpenCVMultiClassProcessor:
     """
     Wrapper around OpenCVImageClassRetriever() class to retrieve and process
@@ -383,13 +402,6 @@ class OpenCVMultiClassProcessor:
         x_img_list = np.vstack(x_img_list)
         y_bbox_list = np.vstack(y_bbox_list)
         y_classif_list = mf.unnest_list_of_lists(y_classif_list)
-        
-        # Conditionally Shuffle and Limit Number of Images
-        #if self.shuffle:
-        #    x_img_list, y_bbox_list, y_classif_list = shuffle_three_lists(x_img_list, y_bbox_list, y_classif_list)
-        #if self.max_images:
-        #    x_img_list, y_bbox_list, y_classif_list = x_img_list[:self.max_images], y_bbox_list[:self.max_images], y_classif_list[:self.max_images]
-            
         return x_img_list, y_bbox_list, y_classif_list
     
     def get_train_test_valid_data(self):
@@ -416,19 +428,24 @@ class OpenCVMultiClassProcessor:
         train_y_classif = np.vstack([class_list_int_dict.get(s) for s in train_y_classif])
         test_y_classif = np.vstack([class_list_int_dict.get(s) for s in test_y_classif])
         valid_y_classif = np.vstack([class_list_int_dict.get(s) for s in valid_y_classif])
+        
+        # Remove Blank Images
+        train_x, train_y, train_bbox = remove_blank_images(train_x[:self.max_images], train_y_classif[:self.max_images],  train_y_bbox[:self.max_images])
+        test_x, test_y, test_bbox = remove_blank_images(test_x[:self.max_images], test_y_classif[:self.max_images],  test_y_bbox[:self.max_images])
+        valid_x, valid_y, valid_bbox = remove_blank_images(valid_x[:self.max_images], valid_y_classif[:self.max_images],  valid_y_bbox[:self.max_images])
+        
+        ### One-Hot Encode Y-Values
+        train_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(train_y))] for t in train_y])
+        test_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(test_y))] for t in test_y])
+        valid_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(valid_y))] for t in valid_y])
 
-        
-        
-        
         # Create and Return Dictionary
         dict_keys = ['TRAIN X', 'TEST X', 'VALIDATION X',
                      'TRAIN BBOX', 'TEST BBOX', 'VALIDATION BBOX',
                      'TRAIN Y', 'TEST Y', 'VALIDATION Y',
                      'CLASS WEIGHT DICT']
-        dict_values = [train_x[:self.max_images], test_x[:self.max_images], valid_x[:self.max_images],
-                       train_y_bbox[:self.max_images], test_y_bbox[:self.max_images], valid_y_bbox[:self.max_images],
-                       train_y_classif[:self.max_images], test_y_classif[:self.max_images], valid_y_classif[:self.max_images],
-                       class_weight_dict]
+        dict_values = [train_x, test_x, valid_x, train_bbox, test_bbox, valid_bbox,
+                       train_y, test_y, valid_y, class_weight_dict]
         return dict(zip(dict_keys, dict_values))
 
 
