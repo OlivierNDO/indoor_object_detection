@@ -105,7 +105,7 @@ def load_resize_images_from_urls(url_list, resize_height, resize_width):
     return read_images
 
 
-def extract_image_subset(img_arr, xmin, xmax, ymin, ymax):
+def extract_image_subset(img_arr, xmin, xmax, ymin, ymax, decimal = True):
     """
     Retrieve subset of 3d numpy array using decimal coordinates
     (i.e. portion of image with bounding box)
@@ -115,11 +115,16 @@ def extract_image_subset(img_arr, xmin, xmax, ymin, ymax):
         xmax (float): maximum X-coordinate (expressed as decimal)
         ymin (float): minimum Y-coordinate (expressed as decimal)
         ymax (float): maximum Y-coordinate (expressed as decimal)
+        decimal (bool): True / False. Indicates whether inputs are decimal positions or integer.
     Returns:
         numpy.array
     """
-    h, w, c = img_arr.shape
-    return img_arr[int(ymin * h):int(ymax * h), int(xmin * w):int(xmax * w)]
+    if decimal:
+        h, w, c = img_arr.shape
+        output = img_arr[int(ymin * h):int(ymax * h), int(xmin * w):int(xmax * w)]
+    else:
+        output = img_arr[ymin:ymax, xmin:xmax]
+    return output
 
 
 def plot_image_bounding_box(img_arr, xmin, xmax, ymin, ymax, label,
@@ -373,13 +378,15 @@ class OpenCVMultiClassProcessor:
                  class_list,
                  max_images = None,
                  random_state = 9242020,
-                 #shuffle = True,
+                 resize_height = cdp.config_resize_height,
+                 resize_width = cdp.config_resize_width,
                  test_size = 0.2):
         # Initialize Arguments
         self.class_list = class_list
         self.max_images = max_images
         self.random_state = random_state
-        #self.shuffle = shuffle
+        self.resize_height = resize_height
+        self.resize_width = resize_width
         self.test_size = test_size
         
     
@@ -434,20 +441,47 @@ class OpenCVMultiClassProcessor:
         test_x, test_y, test_bbox = remove_blank_images(test_x[:self.max_images], test_y_classif[:self.max_images],  test_y_bbox[:self.max_images])
         valid_x, valid_y, valid_bbox = remove_blank_images(valid_x[:self.max_images], valid_y_classif[:self.max_images],  valid_y_bbox[:self.max_images])
         
-        ### One-Hot Encode Y-Values
+        # One-Hot Encode Y-Values
         train_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(train_y))] for t in train_y])
         test_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(test_y))] for t in test_y])
         valid_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(valid_y))] for t in valid_y])
+        
+        
+        # Generate Object-Only Crops of X Arrays: Train
+        train_obj_x = []
+        for i in range(train_bbox.shape[0]):
+            t = extract_image_subset(train_x[i], train_bbox[i][0], train_bbox[i][1], train_bbox[i][2], train_bbox[i][3], decimal = False)
+            train_obj_x.append(resize(t, (self.resize_width, self.resize_height)))
+        train_obj_x = np.array(train_obj_x)
+        
+        # Generate Object-Only Crops of X Arrays: Test
+        test_obj_x = []
+        for i in range(test_bbox.shape[0]):
+            t = extract_image_subset(test_x[i], test_bbox[i][0], test_bbox[i][1], test_bbox[i][2], test_bbox[i][3], decimal = False)
+            test_obj_x.append(resize(t, (self.resize_width, self.resize_height)))
+        test_obj_x = np.array(test_obj_x)
+        
+        
+        # Generate Object-Only Crops of X Arrays: Validation
+        valid_obj_x = []
+        for i in range(valid_bbox.shape[0]):
+            t = extract_image_subset(valid_x[i], valid_bbox[i][0], valid_bbox[i][1], valid_bbox[i][2], valid_bbox[i][3], decimal = False)
+            valid_obj_x.append(resize(t, (self.resize_width, self.resize_height)))
+        valid_obj_x = np.array(valid_obj_x)
+        
+        
 
         # Create and Return Dictionary
         dict_keys = ['TRAIN X', 'TEST X', 'VALIDATION X',
+                     'TRAIN OBJECT X', 'TEST OBJECT X', 'VALIDATION OBJECT X',
                      'TRAIN BBOX', 'TEST BBOX', 'VALIDATION BBOX',
                      'TRAIN Y', 'TEST Y', 'VALIDATION Y',
                      'CLASS WEIGHT DICT']
-        dict_values = [train_x, test_x, valid_x, train_bbox, test_bbox, valid_bbox,
+        dict_values = [train_x, test_x, valid_x,
+                       train_obj_x, test_obj_x, valid_obj_x,
+                       train_bbox, test_bbox, valid_bbox,
                        train_y, test_y, valid_y, class_weight_dict]
         return dict(zip(dict_keys, dict_values))
-
 
 
 

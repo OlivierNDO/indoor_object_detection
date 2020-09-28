@@ -56,111 +56,41 @@ from tensorflow.keras.callbacks import LearningRateScheduler, ReduceLROnPlateau
 from tensorflow.keras.optimizers import Adam
 
 # Import Project Modules
-import src.config_data_processing as cdp
-import src.image_manipulation as imm
-import src.misc_functions as mf
-import src.modeling as m
+from src import config_data_processing as cdp
+from src import image_manipulation as imm
+from src import misc_functions as mf
+from src import modeling as m
 
 
 ### Retrieve & Process Class Data
 ###############################################################################   
-class_processor = imm.OpenCVMultiClassProcessor(class_list = ['Piano', 'Computer monitor', 'Kitchen & dining room table'], max_images = 3000)
+class_processor = imm.OpenCVMultiClassProcessor(class_list = ['Bed', 'Piano', 'Sink', 'Television'], max_images = 3000)
 
 
 proc_data_dict = class_processor.get_train_test_valid_data()
+
+# Full Image Arrays
 train_x = proc_data_dict.get('TRAIN X')
 test_x = proc_data_dict.get('TEST X')
 valid_x = proc_data_dict.get('VALIDATION X')
+
+# Image Arrays Cropped to Objects
+train_obj_x = proc_data_dict.get('TRAIN OBJECT X')
+test_obj_x = proc_data_dict.get('TEST OBJECT X')
+valid_obj_x = proc_data_dict.get('VALIDATION OBJECT X')
+
+# Bounding Boxes
 train_bbox = proc_data_dict.get('TRAIN BBOX')
 test_bbox = proc_data_dict.get('TEST BBOX')
-test_bbox = proc_data_dict.get('VALIDATION BBOX')
+valid_bbox = proc_data_dict.get('VALIDATION BBOX')
+
+# Response Variable & Class Weights
 train_y = proc_data_dict.get('TRAIN Y')
 test_y = proc_data_dict.get('TEST Y')
 valid_y = proc_data_dict.get('VALIDATION Y')
 class_weight_dict = proc_data_dict.get('CLASS WEIGHT DICT')
 
 
-
-### Remove Arrays with All Zeroes (black images... will break neural net)
-###############################################################################
-
-def remove_blank_images(x_arr, y_arr, bbox_arr):
-    """
-    For ordered pair of x and y arrays, remove arrays with blank images in X
-    Args:
-        x_arr (numpy.array): 4d numpy array (images)
-        y_arr (numpy.array): array or nested list with dependent variable
-        bbox_arr (numpy.array): array of bounding box coordinates
-    Returns:
-        x (numpy.array), y (numpy.array), bbox (numpy array)
-    """
-    nan = [i for i, x in enumerate(x_arr) if np.isnan(np.sum(x))]
-    inf = [i for i, x in enumerate(x_arr) if math.isinf(np.sum(x))]
-    near_zero = [i for i, x in enumerate(x_arr) if (np.sum(x == 0) / np.sum(x != 0)) > 5]
-    remove = list(set(nan + inf + near_zero))
-    keep = [i for i in range(x_arr.shape[0]) if i not in remove]
-    return x_arr[keep], y_arr[keep], bbox_arr[keep]
-
-
-
-    
-
-train_x, train_y, train_bbox = remove_blank_images(train_x, train_y, train_bbox)
-
-
-
-
-
-
-# Training Set
-nan = [i for i, x in enumerate(train_x) if np.isnan(np.sum(x))]
-inf = [i for i, x in enumerate(train_x) if math.isinf(np.sum(x))]
-near_zero = [i for i, x in enumerate(train_x) if (np.sum(x == 0) / np.sum(x != 0)) > 5]
-remove = list(set(nan + inf + near_zero))
-keep = [i for i in range(train_x.shape[0]) if i not in remove]
-train_x = train_x[keep]
-train_y = train_y[keep]
-
-
-# Validation Set
-nan = [i for i, x in enumerate(valid_x) if np.isnan(np.sum(x))]
-inf = [i for i, x in enumerate(valid_x) if math.isinf(np.sum(x))]
-near_zero = [i for i, x in enumerate(valid_x) if (np.sum(x == 0) / np.sum(x != 0)) > 5]
-remove = list(set(nan + inf + near_zero))
-keep = [i for i in range(valid_x.shape[0]) if i not in remove]
-valid_x = valid_x[keep]
-valid_y = valid_y[keep]
-
-# Test Set
-nan = [i for i, x in enumerate(test_x) if np.isnan(np.sum(x))]
-inf = [i for i, x in enumerate(test_x) if math.isinf(np.sum(x))]
-near_zero = [i for i, x in enumerate(test_x) if (np.sum(x == 0) / np.sum(x != 0)) > 5]
-remove = list(set(nan + inf + near_zero))
-keep = [i for i in range(test_x.shape[0]) if i not in remove]
-test_x = test_x[keep]
-test_y = test_y[keep]
-
-
-### One-Hot Encode Y-Values
-###############################################################################
-train_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(train_y))] for t in train_y])
-test_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(test_y))] for t in test_y])
-valid_y = np.array([[1 if t == i else 0 for i, x in enumerate(np.unique(valid_y))] for t in valid_y])
-
-
-
-
-plt.imshow(train_x[0])
-train_bbox[0][0]
-
-
-
-imm.plot_image_bounding_box(train_x[0],
-                            [train_bbox[0][0]],
-                            [train_bbox[0][1]],
-                            [train_bbox[0][2]],
-                            [train_bbox[0][3]],
-                            'Piano')
 
 
 
@@ -203,9 +133,9 @@ model.compile(loss='categorical_crossentropy',
               optimizer = Adam(),
               metrics = ['categorical_accuracy'])
 
-model.fit(train_x, train_y,
-          epochs = 1,
-          validation_data = (valid_x, valid_y),
+model.fit(train_obj_x, train_y,
+          epochs = 10,
+          validation_data = (valid_obj_x, valid_y),
           steps_per_epoch = tsteps,
           callbacks = [check_point, early_stop, lr_schedule.lr_scheduler()],
           class_weight = class_weight_dict)
