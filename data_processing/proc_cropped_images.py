@@ -1,19 +1,8 @@
 ### Overview
 ###############################################################################
-# Takes functions written for room classification project (src.modeling)
-# and runs a basic classification task on mirrors vs. countertops
+# Reads images from URLs in selected classes, crops to objects based
+# on bounding boxes, resizes to 200 x 200, and writes to Google Cloud Storage Bucket
 
-
-# Next Steps (project):
-#   Create folders with fewer imgaes per class
-#   Add functionality to make classification only use subset of image with object
-#   Use sliding window to turn classification model into object detection
-#   https://www.pyimagesearch.com/2020/06/22/turning-any-cnn-image-classifier-into-an-object-detector-with-keras-tensorflow-and-opencv/
-#
-# Next Steps (knowledge sharing):
-#   Build classification model from scratch rather than re-using models from previous G3
-#
-#
 
 
 ### Configuration
@@ -69,7 +58,4 @@ if __name__ == '__main__':
     for c in cdp.config_obj_detection_classes:
         image_retriever = imm.OpenCVCroppedImageRetriever(class_name = c, max_images = 5000)
         image_retriever.cropped_obj_images_to_gcs()
-
-
-
 
