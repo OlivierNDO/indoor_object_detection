@@ -485,6 +485,106 @@ class OpenCVMultiClassProcessor:
 
 
 
+def is_blank_img(img_arr, nonzero_threshold = 0.2):
+    nonzero_percent = np.count_nonzero(img_arr) / np.product(img_arr.shape)
+    return any([np.isnan(np.sum(img_arr)), math.isinf(np.sum(img_arr)), nonzero_percent < nonzero_threshold])
+
+
+
+
+class OpenCVCroppedImageRetriever:
+    """
+    Retrieve, process, and crop via bounding box before saving images from Google Open Images V6 URLs
+    Args:
+        class_name (str): class name corresponding to subset of images
+    """
+    
+    def __init__(self, 
+                 class_name,
+                 local_gcs_json_path = f'{cdp.config_gcs_auth_json_path}',
+                 image_id_col = 'ImageID',
+                 bucket_name = f'{cdp.config_source_bucket_name}',
+                 processed_bucket_subfolder = f'{cdp.config_processed_bucket_subfolder}',
+                 processed_array_save_name = 'train_images_cropped.npy',
+                 resize_height = cdp.config_resize_height,
+                 resize_width = cdp.config_resize_width,
+                 max_images = 5000
+                 ):
+        # Initialize Arguments
+        self.class_name = class_name
+        self.local_gcs_json_path = local_gcs_json_path
+        self.image_id_col = image_id_col
+        self.local_gcs_json_path = local_gcs_json_path
+        self.bucket_name = bucket_name
+        self.processed_bucket_subfolder = processed_bucket_subfolder
+        self.processed_array_save_name = processed_array_save_name
+        self.resize_height = resize_height
+        self.resize_width = resize_width
+        self.max_images = max_images
+        
+        # Reference Google Cloud Authentication Document
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = self.local_gcs_json_path
+        
+    
+    def get_cropped_obj_images(self):
+        # Retrieve Class Metadata
+        image_retriever = OpenCVImageClassRetriever(class_name = self.class_name)
+        bbox_df = image_retriever.get_bounding_box_df()
+        desc_df = image_retriever.get_class_desc_df()
+        
+        # Image IDs
+        unique_img_ids = list(np.unique(bbox_df[self.image_id_col].values.tolist()))
+        if self.max_images is not None:
+            unique_img_ids = unique_img_ids[:self.max_images]
+        
+        # Read and Crop Images with Bounding Boxes
+        cropped_img_list = []
+        for img_id in tqdm.tqdm(unique_img_ids):
+            try:
+                # Subset Info Dataframes for Image ID
+                bbox_df_i = bbox_df[bbox_df.ImageID == img_id]
+                desc_df_i = desc_df[desc_df.ImageID == img_id]
+                
+                # Read Image
+                img_i = read_url_image(desc_df_i['OriginalURL'].values[0])
+            
+                # Extract Cropped Objects
+                bbox_coords = bbox_df_i[['XMin', 'XMax', 'YMin', 'YMax']].values.tolist()
+                for bbc in bbox_coords:
+                    xmin, xmax, ymin, ymax = bbc
+                    img_subset = resize(extract_image_subset(img_i, xmin, xmax, ymin, ymax), (self.resize_width, self.resize_height))
+                    correct_shape = (self.resize_width, self.resize_height, 3)
+                    if (not is_blank_img(img_subset) and img_subset.shape == correct_shape):
+                        cropped_img_list.append(img_subset)
+            except:
+                pass
+        return np.array(cropped_img_list)
+    
+    
+    def cropped_obj_images_to_gcs(self):
+        # Read, Crop, and Resize Images
+        mf.print_timestamp_message(f'Reading, cropping, and resizing {self.class_name} images')
+        image_arrays_concat = self.get_cropped_obj_images()
+        n_images = image_arrays_concat.shape[0]
+        
+        # Write Images to Google Cloud Storage Bucket
+        image_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_array_save_name}'
+        mf.print_timestamp_message(f'Writing {n_images} cropped images to GCS bucket/folder {self.bucket_name}/{image_save_name}')
+        mf.save_np_array_to_gsc(np_array = image_arrays_concat, bucket_name = self.bucket_name, file_name = image_save_name)
+        
+        
+    def read_cropped_image_array(self):
+        # Assert Data Exists in GCS Bucket
+        folder_exists = mf.gcs_subfolder_exists(bucket_name = self.bucket_name, subfolder_name = self.class_name)
+        assert_msg = f"Data for image class '{self.class_name} doesn't exist. Create it with self.cropped_obj_images_to_gcs() method'"
+        assert folder_exists, assert_msg
+        
+        # Read and Return Images
+        image_save_name = f'{self.processed_bucket_subfolder}{self.class_name}/{self.processed_array_save_name}'
+        img_array = mf.read_gcs_numpy_array(bucket_name = self.bucket_name, file_name = image_save_name)
+        return img_array
+
+
 
 
 

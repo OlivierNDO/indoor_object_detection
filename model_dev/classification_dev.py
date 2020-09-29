@@ -64,7 +64,7 @@ from src import modeling as m
 
 ### Retrieve & Process Class Data
 ###############################################################################   
-class_processor = imm.OpenCVMultiClassProcessor(class_list = ['Bed', 'Sink', 'Television'], max_images = 2000)
+class_processor = imm.OpenCVMultiClassProcessor(class_list = ['Computer monitor', 'Kitchen & dining room table', 'Piano'], max_images = 500)
 
 
 proc_data_dict = class_processor.get_train_test_valid_data()
@@ -117,10 +117,10 @@ tsteps = int(train_x.shape[0]) // m.config_batch_size
 vsteps = int(valid_x.shape[0]) // m.config_batch_size
 
 # Create Learning Rate Schedule
-lr_schedule = m.CyclicalRateSchedule(min_lr = 0.00002,
-                                     max_lr = 0.00015,
+lr_schedule = m.CyclicalRateSchedule(min_lr = 1e-05,
+                                     max_lr = 0.0005,
                                      n_epochs = 25,
-                                     warmup_epochs = 3,
+                                     warmup_epochs = 1,
                                      cooldown_epochs = 1,
                                      cycle_length = 5,
                                      logarithmic = True,
@@ -152,6 +152,7 @@ model.fit(train_x, train_y,
           epochs = 25,
           validation_data = (valid_x, valid_y),
           steps_per_epoch = tsteps,
+          validation_steps = vsteps,
           callbacks = [check_point, early_stop, lr_schedule.lr_scheduler()],
           class_weight = class_weight_dict)
 
@@ -180,14 +181,14 @@ pd.DataFrame({'accuracy' : [acc], 'true positive rate' : [tpr], 'true negative r
 def temp_plot_test_obs(n = 20):
     for i in range(n):
         random_test_obs = random.choice(list(range(test_x.shape[0])))
-        class_dict = {0 : 'Kitchen & dining room table', 1 : "Piano", 2 : "Computer monitor"}
+        class_dict = {0 : 'Bed', 1 : "Television", 2 : "Sink"}
         class_probs = [class_dict.get(i) + ":  " + str(round(x*100,5)) + "%" for i, x in enumerate(pred_values[random_test_obs])]
         actual = class_dict.get(np.argmax(test_y[random_test_obs]))
         plt.imshow(test_x[random_test_obs])
         plt.title("Actual: {a}".format(a = actual) + "\n" + "\n".join(class_probs))
         plt.show()
 
-temp_plot_test_obs()
+temp_plot_test_obs(n = 5)
 
 
 

@@ -552,6 +552,53 @@ def rn_conv_block(input_x, kernel_size, filters, strides=(2, 2), l2_reg = config
     return x
 
 
+
+def resnet_conv_small(kernel_size = (3,3), img_height = config_img_height,
+                      img_width = config_img_width, color_mode = config_color_mode, 
+                      activ = config_cnn_activation, n_classes = config_n_classes):
+    # Input shape
+    if color_mode == "rgb":
+        config_input_shape = (config_img_height, config_img_width, 3)
+    else:
+        config_input_shape = (config_img_height, config_img_width, 1)
+        
+    x_input = Input(config_input_shape)
+
+    # Layer 1
+    x = ZeroPadding2D(padding=(3, 3))(x_input)
+    x = Conv2D(64, (7, 7), strides=(2, 2), padding='valid', use_bias = False)(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D((3, 3), strides=(2, 2))(x)
+
+    # Block 1
+    x = rn_conv_block(x, 3, [64, 64, 256], strides=(1, 1))
+    x = rn_id_block(x, 3, [64, 64, 256])
+    x = rn_id_block(x, 3, [64, 64, 256])
+
+    # Block 2
+    x = rn_conv_block(x, 3, [128, 128, 512])
+    x = rn_id_block(x, 3, [128, 128, 512])
+    x = rn_id_block(x, 3, [128, 128, 512])
+    x = rn_id_block(x, 3, [128, 128, 512])
+
+    # Dimension Reduction
+    x = GlobalAvgPool2D(name = 'global_avg_pooling')(x)
+    x = Flatten()(x)
+    x = Dense(n_classes, activation='softmax')(x)
+    
+    model = Model(inputs = x_input, outputs = x, name = 'resnet_50_layer') 
+    return model
+
+
+
+
+
+
+
+
+
+
 def resnet_conv_50_layer(kernel_size = (3,3), img_height = config_img_height,
                          img_width = config_img_width, color_mode = config_color_mode, 
                          activ = config_cnn_activation, n_classes = config_n_classes):
