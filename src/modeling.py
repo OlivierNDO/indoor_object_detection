@@ -57,7 +57,7 @@ config_model_save_name = f"{cdp.config_model_save_folder}cloud_scene_img_model_s
 config_max_worse_epochs = 10
 
 # Model training config
-config_batch_size = 20
+config_batch_size = 100
 config_warmup_epochs = 5
 config_cooldown_epochs = 5
 config_cycle_length = 10

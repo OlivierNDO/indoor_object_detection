@@ -64,7 +64,7 @@ from src import modeling as m
 
 ### Retrieve & Process Class Data
 ###############################################################################   
-class_processor = imm.OpenCVMultiClassProcessor(class_list = ['Bed', 'Piano', 'Sink', 'Television'], max_images = 3000)
+class_processor = imm.OpenCVMultiClassProcessor(class_list = ['Bed', 'Sink', 'Television'], max_images = 2000)
 
 
 proc_data_dict = class_processor.get_train_test_valid_data()
@@ -92,8 +92,22 @@ class_weight_dict = proc_data_dict.get('CLASS WEIGHT DICT')
 
 
 
+### Augment Training Data
+###############################################################################   
+# Flip Half of Arrays Left/Right and Half Up/Down
+train_aug_x = np.array([np.fliplr(x) if j%2 == 0 else np.flipud(x) for j, x in enumerate(train_x)])
 
+# Look at Difference: Left/Right
+plt.imshow(train_x[0])
+plt.imshow(train_aug_x[0])
 
+# Look at Difference: Up/Down
+plt.imshow(train_x[1])
+plt.imshow(train_aug_x[1])
+
+# Combine
+train_x = np.vstack((train_x, train_aug_x))
+train_y = np.vstack((train_y, train_y))
 
 ### Define Keras Configuration
 ###############################################################################
@@ -103,16 +117,17 @@ tsteps = int(train_x.shape[0]) // m.config_batch_size
 vsteps = int(valid_x.shape[0]) // m.config_batch_size
 
 # Create Learning Rate Schedule
-lr_schedule = m.CyclicalRateSchedule(min_lr = 1e-05,
-                                     max_lr = 0.0005,
+lr_schedule = m.CyclicalRateSchedule(min_lr = 0.00002,
+                                     max_lr = 0.00015,
                                      n_epochs = 25,
-                                     warmup_epochs = 1,
+                                     warmup_epochs = 3,
                                      cooldown_epochs = 1,
                                      cycle_length = 5,
                                      logarithmic = True,
                                      decrease_factor = 0.9)
 
 lr_schedule.plot_cycle()
+
 
 ### Model Training
 ###############################################################################
@@ -133,9 +148,9 @@ model.compile(loss='categorical_crossentropy',
               optimizer = Adam(),
               metrics = ['categorical_accuracy'])
 
-model.fit(train_obj_x, train_y,
-          epochs = 10,
-          validation_data = (valid_obj_x, valid_y),
+model.fit(train_x, train_y,
+          epochs = 25,
+          validation_data = (valid_x, valid_y),
           steps_per_epoch = tsteps,
           callbacks = [check_point, early_stop, lr_schedule.lr_scheduler()],
           class_weight = class_weight_dict)
