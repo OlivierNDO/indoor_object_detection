@@ -64,7 +64,6 @@ from src import modeling as m
 
 ### Data Processing: Read Cropped Images for Classification
 ###############################################################################
-
 # Cropped 'Chest of drawers' Images
 get_class1 = 'Chest of drawers'
 x1 = mf.read_gcs_numpy_array(bucket_name = cdp.config_source_bucket_name, file_name = f'processed_files/{get_class1}/train_images_cropped.npy')
@@ -122,7 +121,7 @@ class_weight_dict = imm.make_class_weight_dict([np.argmax(x) for x in train_y], 
 ###############################################################################
 # Parameters
 mc_batch_size = 20
-mc_epochs = 10
+mc_epochs = 2
 mc_learning_rate = 0.001
 mc_dropout = 0.2
 
@@ -133,7 +132,6 @@ vsteps = int(valid_x.shape[0]) // mc_batch_size
 
 ### Model Architecture
 ###############################################################################
-
 # Clear Session (this removes any trained model from your PC's memory)
 train_start_time = time.time()
 keras.backend.clear_session()
@@ -195,6 +193,10 @@ model.summary()
 
 ### Model Fitting
 ###############################################################################
+# Keras Model Checkpoints (used for early stopping & logging epoch accuracy)
+check_point = keras.callbacks.ModelCheckpoint(m.config_model_save_name, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')
+early_stop = keras.callbacks.EarlyStopping(monitor = 'val_loss', mode = 'min',  patience = m.config_max_worse_epochs)
+csv_logger = keras.callbacks.CSVLogger(m.config_csv_save_name)
 
 
 # Define model, scale to multiple GPUs, and start training
@@ -207,14 +209,52 @@ model.fit(train_x, train_y,
           validation_data = (valid_x, valid_y),
           steps_per_epoch = tsteps,
           validation_steps = vsteps,
+          callbacks = [check_point, early_stop, csv_logger],
           class_weight = class_weight_dict)
 
 train_end_time = time.time()
 m.sec_to_time_elapsed(train_end_time, train_start_time)
 
 
+### Plot Model Progress
+###############################################################################
+# Accuracy
+m.plot_training_progress(csv_file_path = m.config_csv_save_name,
+                         train_metric = 'categorical_accuracy',
+                         validation_metric = 'val_categorical_accuracy')
+
+# Entropy (Loss)
+m.plot_training_progress(csv_file_path = m.config_csv_save_name,
+                         train_metric = 'loss',
+                         validation_metric = 'val_loss')
 
 
 
+### Model Test Set Prediction
+###############################################################################
+# Predict with Model on Test Set
+saved_model = keras.models.load_model(m.config_model_save_name)
+pred_values = model.predict(test_x)
+
+# Accuracy on Test Set
+true_pos = [int(pred_values[i,np.argmax(test_y[i])] >= 0.5) for i in range(test_y.shape[0])]
+true_neg = mf.unnest_list_of_lists([[int(y < 0.5) for i, y in enumerate(pred_values[r,:]) if i != np.argmax(test_y[r])] for r in range(test_y.shape[0])])
+true_agg = true_pos + true_neg
+pd.DataFrame({'accuracy' : [sum(true_agg) / len(true_agg)],
+              'true positive rate' : [sum(true_pos) / len(true_pos)],
+              'true negative rate' : [sum(true_neg) / len(true_neg)]})
 
 
+
+# Look at Some Predictions
+def temp_plot_test_obs(n = 20):
+    for i in range(n):
+        random_test_obs = random.choice(list(range(test_x.shape[0])))
+        class_dict = {0 : 'Chest of drawers', 1 : 'Fireplace', 2 : 'Sofa bed'}
+        class_probs = [class_dict.get(i) + ":  " + str(round(x*100,5)) + "%" for i, x in enumerate(pred_values[random_test_obs])]
+        actual = class_dict.get(np.argmax(test_y[random_test_obs]))
+        plt.imshow(test_x[random_test_obs])
+        plt.title("Actual: {a}".format(a = actual) + "\n" + "\n".join(class_probs))
+        plt.show()
+
+temp_plot_test_obs(n = 5)

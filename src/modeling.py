@@ -53,8 +53,10 @@ config_sample_perc = None
 # Model save & callback config
 config_model_timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M")
 mf.create_folder_if_not_existing(cdp.config_model_save_folder)
+mf.create_folder_if_not_existing(cdp.config_csv_save_folder)
 config_model_save_name = f"{cdp.config_model_save_folder}cloud_scene_img_model_sgd_lrs_{config_model_timestamp}.hdf5"
-config_max_worse_epochs = 10
+config_csv_save_name = f"{cdp.config_csv_save_folder}epoch_results_{config_model_timestamp}.csv"
+config_max_worse_epochs = 5
 
 # Model training config
 config_batch_size = 100

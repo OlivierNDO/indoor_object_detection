@@ -19,6 +19,7 @@ config_train_bbox_csv = 'oidv6-train-annotations-bbox.csv'
 config_class_desc_csv = 'class-descriptions-boxable.csv'
 config_temp_local_folder = 'D:/numpy_transfer/'
 config_model_save_folder = 'C:/keras_model_save/'
+config_csv_save_folder = 'C:/keras_epoch_results/'
 
 ### Data Manipulation
 ###############################################################################
