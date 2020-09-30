@@ -69,7 +69,7 @@ get_class1 = 'Chest of drawers'
 x1 = mf.read_gcs_numpy_array(bucket_name = cdp.config_source_bucket_name, file_name = f'processed_files/{get_class1}/train_images_cropped.npy')
 plt.imshow(x1[0])
 
-# Cropped 'Chest of drawers' Images
+# Cropped 'Fireplace' Images
 get_class2 = 'Fireplace'
 x2 = mf.read_gcs_numpy_array(bucket_name = cdp.config_source_bucket_name, file_name = f'processed_files/{get_class2}/train_images_cropped.npy')
 plt.imshow(x2[0])
@@ -199,7 +199,7 @@ early_stop = keras.callbacks.EarlyStopping(monitor = 'val_loss', mode = 'min',  
 csv_logger = keras.callbacks.CSVLogger(m.config_csv_save_name)
 
 
-# Define model, scale to multiple GPUs, and start training
+# Define Model Compilation
 model.compile(loss='categorical_crossentropy',
               optimizer = Adam(learning_rate = mc_learning_rate),
               metrics = ['categorical_accuracy'])
@@ -257,4 +257,4 @@ def temp_plot_test_obs(n = 20):
         plt.title("Actual: {a}".format(a = actual) + "\n" + "\n".join(class_probs))
         plt.show()
 
-temp_plot_test_obs(n = 5)
+temp_plot_test_obs(n = 10)
