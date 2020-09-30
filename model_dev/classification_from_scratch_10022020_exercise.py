@@ -121,8 +121,8 @@ class_weight_dict = imm.make_class_weight_dict([np.argmax(x) for x in train_y], 
 ### Model Configuration
 ###############################################################################
 # Parameters
-mc_batch_size = 40
-mc_epochs = 2
+mc_batch_size = 20
+mc_epochs = 10
 mc_learning_rate = 0.001
 mc_dropout = 0.2
 
@@ -145,38 +145,42 @@ x_input = Input((200, 200, 3))
 # 3 x 3 filters are popular for reasons explained here:
 #       https://towardsdatascience.com/deciding-optimal-filter-size-for-cnns-d6f7b56f9363
 x = ZeroPadding2D(padding = (3, 3))(x_input)
-x = Conv2D(200, (3, 3), strides = (1, 1), padding = 'valid', use_bias = False)(x)
+x = Conv2D(50, (6, 6), strides = (1, 1), padding = 'valid', use_bias = False)(x)
 x = BatchNormalization()(x)
 x = Activation('relu')(x)
 
-# Convolutional Layer 2 (same as Layer 1)
-x = Conv2D(200, (3, 3), strides = (1, 1), padding = 'valid', use_bias = False)(x)
+# Convolutional Layer 2
+x = Conv2D(50, (3, 3), strides = (2, 2), use_bias = False)(x)
 x = BatchNormalization()(x)
 x = Activation('relu')(x)
 
-# Convolutional Layer 3 (same as Layers 1 and 2 ... except lets pool (reduce dimensions) at the end
-x = Conv2D(200, (3, 3), strides = (1, 1), padding = 'valid', use_bias = False)(x)
+# Convolutional Layer 3
+x = Conv2D(50, (3, 3), strides = (2, 2), use_bias = False)(x)
 x = BatchNormalization()(x)
 x = Activation('relu')(x)
-#x = MaxPooling2D((3, 3), strides=(2, 2))(x)
-x = MaxPooling2D(pool_size = (2,2))(x)
 
 
 # Convolutional Layer 4
-x = Conv2D(100, (3, 3), strides = (1, 1), padding = 'valid', use_bias = False)(x)
+x = Conv2D(50, (3, 3), strides = (2, 2), use_bias = False)(x)
 x = BatchNormalization()(x)
 x = Activation('relu')(x)
+
 
 # Convolutional Layer 5 (same as 4)
-x = Conv2D(100, (3, 3), strides = (1, 1), padding = 'valid', use_bias = False)(x)
+x = Conv2D(150, (3, 3), strides = (2, 2), use_bias = False)(x)
 x = BatchNormalization()(x)
 x = Activation('relu')(x)
 
-# Convolutional Layer 6 (same as 4, 5) ... except lets pool (reduce dimensions) at the end
-x = Conv2D(100, (3, 3), strides = (1, 1), padding = 'valid', use_bias = False)(x)
+# Convolutional Layer 6
+x = Conv2D(150, (3, 3), strides = (2, 2), use_bias = False)(x)
 x = BatchNormalization()(x)
 x = Activation('relu')(x)
-x = MaxPooling2D(pool_size = (2,2))(x)
+
+# Convolutional Layer 7
+x = Conv2D(150, (3, 3), strides = (2, 2), use_bias = False)(x)
+x = BatchNormalization()(x)
+x = Activation('relu')(x)
+x = MaxPooling2D(pool_size = (2,2), strides = (2, 2))(x)
 
 # Dense Layers (output size 3 equal to number of classes)
 x = Flatten()(x)
@@ -186,7 +190,7 @@ x = Dense(100)(x)
 x = Activation('relu')(x)
 x = Dense(3, activation = 'softmax')(x)
 
-model = Model(inputs = x_input, outputs = x, name = 'conv_10_layer') 
+model = Model(inputs = x_input, outputs = x, name = 'cnn_from_scratch') 
 model.summary()
 
 ### Model Fitting
