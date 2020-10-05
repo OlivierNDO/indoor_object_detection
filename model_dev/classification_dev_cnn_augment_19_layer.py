@@ -192,11 +192,9 @@ def cnn_19_layer(n_classes, kernel_size, dense_dropout = 0.5, img_height = 200, 
 ###############################################################################
 # Parameters
 mc_batch_size = 20
-mc_epochs = 50
+mc_epochs = 400
 mc_learning_rate = 0.001
 mc_dropout = 0.2
-use_gpu = False
-n_GPUs = 2
 
 # Calculate Training Steps
 tsteps = int(train_x.shape[0]) // mc_batch_size
@@ -205,7 +203,7 @@ vsteps = int(valid_x.shape[0]) // mc_batch_size
 # Create Learning Rate Schedule
 lr_schedule = m.CyclicalRateSchedule(min_lr = 0.000015,
                                      max_lr = 0.00025,
-                                     n_epochs = 200,
+                                     n_epochs = 400,
                                      warmup_epochs = 5,
                                      cooldown_epochs = 1,
                                      cycle_length = 10,
@@ -227,15 +225,6 @@ keras.backend.clear_session()
 
 # 19-Layer CNN
 model = cnn_19_layer(n_classes = 3, kernel_size = 3)
-if use_gpu:
-    from tensorflow.keras.utils import multi_gpu_model
-    from tensorflow.python.client import device_lib
-    available_gpus = [x.name for x in device_lib.list_local_devices() if x.device_type == 'XLA_GPU']
-    model = multi_gpu_model(model, gpus = len(available_gpus))
-    
-    
-
-
 
 ### Model Fitting
 ###############################################################################
