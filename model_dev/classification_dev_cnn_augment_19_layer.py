@@ -1,20 +1,10 @@
 ### Overview
 ###############################################################################
-# Takes functions written for room classification project (src.modeling)
-# and runs a basic classification task on mirrors vs. countertops
-
-
-# Next Steps (project):
-#   Create folders with fewer imgaes per class
-#   Add functionality to make classification only use subset of image with object
-#   Use sliding window to turn classification model into object detection
-#   https://www.pyimagesearch.com/2020/06/22/turning-any-cnn-image-classifier-into-an-object-detector-with-keras-tensorflow-and-opencv/
+# 3-Class Classfification with 19-layer CNN & Basic Image Augmentation
 #
-# Next Steps (knowledge sharing):
-#   Build classification model from scratch rather than re-using models from previous G3
-#
-#
-
+# Test Set Results
+#   accuracy       true positive rate  true negative rate
+#   0.90457             0.84879             0.93246
 
 ### Configuration
 ###############################################################################
