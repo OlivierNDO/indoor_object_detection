@@ -87,22 +87,6 @@ del x1; del x2; del x3; del binary1; del binary2; del binary3;
 
 
 
-class ArchitectureCrossValidator:
-    """
-    Perform cross validation on keras Model() objects with hyperparameters held constant
-    Args:
-        x (numpy.array)
-    """
-    
-    def __init__(self, x, y, model_list):
-        # Initialize Arguments
-        self.x = x
-        self.y = y
-        self.model_list = model_list
-
-
-
-
 
 
 
@@ -164,7 +148,7 @@ def triple_conv2d(input_x, filter_size, kernel_size, activation, use_batchnorm =
     return x
 
 
-def cnn_19_layer(n_classes, kernel_size, dense_dropout = 0.5, img_height = 200, img_width = 200, activ = 'relu'):
+def cnn_19_layer(n_classes, kernel_size, model_name = 'conv_19_layer', dense_dropout = 0.5, img_height = 200, img_width = 200, activ = 'relu'):
     
     x_input = Input((img_height, img_width, 3))
     
@@ -193,8 +177,150 @@ def cnn_19_layer(n_classes, kernel_size, dense_dropout = 0.5, img_height = 200, 
     x = Dense(n_classes, activation = "softmax")(x)
     
     # Model object
-    model = Model(inputs = x_input, outputs = x, name = 'conv_10_layer') 
-    return model     
+    model = Model(inputs = x_input, outputs = x, name = model_name) 
+    return model
+
+
+def cnn_10_layer(n_classes, kernel_size, model_name = 'conv_10_layer', dense_dropout = 0.5, img_height = 200, img_width = 200, activ = 'relu'):
+    
+    x_input = Input((img_height, img_width, 3))
+    
+    # Initial convolutional layer
+    x = ZeroPadding2D(padding = (kernel_size, kernel_size))(x_input)
+    x = Conv2D(50, (int(kernel_size * 2), int(kernel_size * 2)), strides = (1, 1), padding = 'valid', use_bias = False)(x)
+    x = BatchNormalization()(x)
+    x = Activation(activ)(x)
+    
+    
+    # Triple convolutional layers
+    x = triple_conv2d(x, filter_size = 50, kernel_size = (kernel_size,kernel_size), activation = activ)
+    x = triple_conv2d(x, filter_size = 100, kernel_size = (kernel_size,kernel_size), activation = activ)
+    x = triple_conv2d(x, filter_size = 100, kernel_size = (kernel_size,kernel_size), activation = activ)
+    
+    # Dense Layers
+    x = Flatten()(x)
+    x = Dense(100)(x)
+    x = Activation(activ)(x)
+    x = Dropout(dense_dropout)(x)
+    x = Dense(50)(x)
+    x = Activation(activ)(x)
+    x = Dense(n_classes, activation = "softmax")(x)
+    
+    # Model object
+    model = Model(inputs = x_input, outputs = x, name = model_name) 
+    return model
+
+
+
+
+class ArchitectureCrossValidator:
+    """
+    Perform cross validation on keras Model() objects with hyperparameters held constant
+    Args:
+        x (numpy.array): 4d array of images
+        y (numpy.array): 2d array of binary classification indicators
+        model_list (list): list of keras Model() objects with defined names
+        lr_schedule (CyclicalRateSchedule): LR schedule object from CyclicalRateSchedule() class
+        batch_generator (function): function that yields augmented batches
+        k_folds (int): integer indicating number of folds to cross validate
+        epochs (int): integer indicating number of epochs to train models for
+        batch_size (int): batch size for model training
+        optimizer (keras.Optimizer): optimizer to use in keras model compilation
+        loss (string): loss to use in keras model compilation
+        metrics (list): loss of strings to flow into keras metrics argument
+    Returns:
+        pandas.DataFrame() with fields 'model', 'fold', 'categorical_accuracy', 'execution_time'
+    """
+    
+    def __init__(self, x, y, model_list, lr_schedule, batch_generator = image_flip_batch_generator,
+                 k_folds = 10, epochs = 10, batch_size = 20, optimizer = Adam(),
+                 loss = 'categorical_crossentropy', metrics = ['categorical_accuracy']):
+        # Initialize Arguments
+        self.x = x
+        self.y = y
+        self.model_list = model_list
+        self.lr_schedule = lr_schedule
+        self.batch_generator = batch_generator
+        self.k_folds = k_folds
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.optimizer = optimizer
+        self.loss = loss
+        self.metrics = metrics
+    
+    def get_fold_indices(self):
+        indices = list(range(0, self.x.shape[0]))
+        random.shuffle(indices)
+        n = max([1, math.ceil(len(indices) / self.k_folds)])
+        return [indices[i:i+n] for i in range(0, len(indices), n)]
+    
+    def run_grid_search(self):
+        output_categ_acc = []
+        output_exec_time = []
+        output_folds = []
+        output_models = []
+        output_model_number = []
+        for iM, model in enumerate(self.model_list):
+            for k in range(self.k_folds):
+                # Separate Train and Test in Generators
+                indices = self.get_fold_indices()
+                train_i = mf.unnest_list_of_lists([j for i, j in enumerate(indices) if i != k])
+                test_i = mf.unnest_list_of_lists([j for i, j in enumerate(indices) if i == k])
+                train_gen = self.batch_generator(x[train_i], y[train_i], batch_size = self.batch_size)
+                
+                # Calculate Class Weights
+                class_wt_dict = imm.make_class_weight_dict([np.argmax(x) for x in y[train_i]], return_dict = True)
+                
+                # Train Model
+                train_start_time = time.time()
+                keras.backend.clear_session()
+                
+                # Define Model Compilation
+                model.compile(loss = self.loss,
+                              optimizer = self.optimizer,
+                              metrics = self.metrics)
+                
+                model.fit(train_gen,
+                          epochs = self.epochs,
+                          steps_per_epoch = int(len(train_i)) // self.batch_size,
+                          callbacks = [self.lr_schedule],
+                          class_weight = class_wt_dict)
+                
+                train_end_time = time.time()
+                exec_time = train_end_time - train_start_time
+                
+    
+                # Accuracy on Test Set
+                pred_values = model.predict(x[test_i])
+                output_categ_acc.append(np.mean(np.equal(np.argmax(y[test_i], axis=-1), np.argmax(pred_values, axis=-1))))                
+                output_exec_time.append(exec_time)
+                output_folds.append(k)
+                output_models.append(model.name)
+                output_model_number.append(iM)
+                mf.print_timestamp_message(f'Completed fold {k+1} of {self.k_folds} for model {iM+1} of {len(self.model_list)}')
+        # Collate Fold Results into DataFrame
+        output_df = pd.DataFrame({'model' : output_models,
+                                  'model_number' : output_model_number,
+                                  'fold' : output_folds,
+                                  'categorical_accuracy' : output_categ_acc,
+                                  'execution_time' : output_exec_time})
+        return output_df
+            
+        
+
+cross_validator = ArchitectureCrossValidator(x = x, y = y,
+                                             model_list = [cnn_10_layer(n_classes = 3, kernel_size = 3),
+                                                           cnn_19_layer(n_classes = 3, kernel_size = 3)],
+                                             lr_schedule = lr_schedule.lr_scheduler(),
+                                             batch_generator = image_flip_batch_generator,
+                                             k_folds = 5, epochs = 2)
+
+arch_cv_results = cross_validator.run_grid_search()
+
+
+
+
+
 
 
 
@@ -202,7 +328,7 @@ def cnn_19_layer(n_classes, kernel_size, dense_dropout = 0.5, img_height = 200, 
 ###############################################################################
 # Parameters
 mc_batch_size = 20
-mc_epochs = 400
+mc_epochs = 1
 mc_learning_rate = 0.001
 mc_dropout = 0.2
 
@@ -236,12 +362,13 @@ keras.backend.clear_session()
 # 19-Layer CNN
 model = cnn_19_layer(n_classes = 3, kernel_size = 3)
 
+
 ### Model Fitting
 ###############################################################################
 # Keras Model Checkpoints (used for early stopping & logging epoch accuracy)
-#check_point = keras.callbacks.ModelCheckpoint(m.config_model_save_name, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')
-#early_stop = keras.callbacks.EarlyStopping(monitor = 'val_loss', mode = 'min',  patience = 15)
-#csv_logger = keras.callbacks.CSVLogger(m.config_csv_save_name)
+check_point = keras.callbacks.ModelCheckpoint(m.config_model_save_name, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')
+early_stop = keras.callbacks.EarlyStopping(monitor = 'val_loss', mode = 'min',  patience = 15)
+csv_logger = keras.callbacks.CSVLogger(m.config_csv_save_name)
 
 
 # Define Model Compilation
@@ -293,6 +420,11 @@ pd.DataFrame({'accuracy' : [sum(true_agg) / len(true_agg)],
 
 
 
+acc = np.mean(np.equal(np.argmax(test_y, axis=-1), np.argmax(pred_values, axis=-1)))
+ac = np.mean(np.diff(np.argmax(test_y, axis=-1), np.argmax(pred_values, axis=-1)))
+    
+    
+    
 # Look at Some Predictions
 def temp_plot_test_obs(n = 20):
     for i in range(n):
