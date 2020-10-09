@@ -93,17 +93,32 @@ del x1; del x2; del x3; del binary1; del binary2; del binary3;
 ### Data Processing: Train, Test, Validation Split
 ###############################################################################
 # Split X and Y into 70/30 Train/Test
-train_x, test_x, train_y, test_y = train_test_split(x, y, test_size = 0.3, shuffle = True, random_state = 100)
+#train_x, test_x, train_y, test_y = train_test_split(x, y, test_size = 0.3, shuffle = True, random_state = 100)
 
 # Split Test Set into 15/15 Test/Validation
-valid_x, test_x, valid_y, test_y = train_test_split(test_x, test_y, test_size = 0.5, shuffle = True, random_state = 100)
+#valid_x, test_x, valid_y, test_y = train_test_split(test_x, test_y, test_size = 0.5, shuffle = True, random_state = 100)
 
 
 ### Data Processing: Class Weights & Augmentation Generator
 ###############################################################################
 # Class Weight Dictionary
-class_weight_dict = imm.make_class_weight_dict([np.argmax(x) for x in train_y], return_dict = True)
+#class_weight_dict = imm.make_class_weight_dict([np.argmax(x) for x in train_y], return_dict = True)
 
+
+
+
+### Model Architectures to Compare
+###############################################################################
+
+# Learning Rate Schedule
+lr_schedule = m.CyclicalRateSchedule(min_lr = 0.000015,
+                                     max_lr = 0.00025,
+                                     n_epochs = 400,
+                                     warmup_epochs = 5,
+                                     cooldown_epochs = 1,
+                                     cycle_length = 10,
+                                     logarithmic = True,
+                                     decrease_factor = 0.9)
 
 # Generator to Augment Images During Training
 def image_flip_batch_generator(x_arr, y_arr, h_flip_every = 2, v_flip_every = 4, batch_size = 20):
@@ -130,19 +145,19 @@ def image_flip_batch_generator(x_arr, y_arr, h_flip_every = 2, v_flip_every = 4,
                     
 
 # Functions to Make Deeper Networks w/ Fewer Lines of Code
-def triple_conv2d(input_x, filter_size, kernel_size, activation, use_batchnorm = True, use_maxpool = True):
+def triple_conv2d(input_x, filter_size, kernel_size, activation):
     # Layer 1
-    x = Conv2D(filters = filter_size, kernel_size = kernel_size, strides = (2,2), padding = 'same')(input_x)
+    x = Conv2D(filters = filter_size, kernel_size = kernel_size, strides = (2,2), padding = 'same', use_bias = False)(input_x)
     x = Activation(activation)(x)
     x = BatchNormalization()(x)
     
     # Layer 2
-    x = Conv2D(filters = filter_size, kernel_size = kernel_size, strides = (1,1), padding = 'same')(x)
+    x = Conv2D(filters = filter_size, kernel_size = kernel_size, strides = (1,1), padding = 'same', use_bias = False)(x)
     x = Activation(activation)(x)
     x = BatchNormalization()(x)
     
     # Layer 3
-    x = Conv2D(filters = filter_size, kernel_size = kernel_size, strides = (1,1), padding = 'same')(x)
+    x = Conv2D(filters = filter_size, kernel_size = kernel_size, strides = (1,1), padding = 'same', use_bias = False)(x)
     x = Activation(activation)(x)
     x = BatchNormalization()(x)
     return x
@@ -313,127 +328,10 @@ cross_validator = ArchitectureCrossValidator(x = x, y = y,
                                                            cnn_19_layer(n_classes = 3, kernel_size = 3)],
                                              lr_schedule = lr_schedule.lr_scheduler(),
                                              batch_generator = image_flip_batch_generator,
-                                             k_folds = 5, epochs = 2)
+                                             k_folds = 10,
+                                             epochs = 30)
 
 arch_cv_results = cross_validator.run_grid_search()
 
 
 
-
-
-
-
-
-### Model Configuration
-###############################################################################
-# Parameters
-mc_batch_size = 20
-mc_epochs = 1
-mc_learning_rate = 0.001
-mc_dropout = 0.2
-
-# Calculate Training Steps
-tsteps = int(train_x.shape[0]) // mc_batch_size
-vsteps = int(valid_x.shape[0]) // mc_batch_size
-
-# Create Learning Rate Schedule
-lr_schedule = m.CyclicalRateSchedule(min_lr = 0.000015,
-                                     max_lr = 0.00025,
-                                     n_epochs = 400,
-                                     warmup_epochs = 5,
-                                     cooldown_epochs = 1,
-                                     cycle_length = 10,
-                                     logarithmic = True,
-                                     decrease_factor = 0.9)
-
-lr_schedule.plot_cycle()
-
-# Create Augmentation Generator Objects
-train_gen = image_flip_batch_generator(train_x, train_y, batch_size = mc_batch_size)
-valid_gen = image_flip_batch_generator(valid_x, valid_y, batch_size = mc_batch_size)
-test_gen = image_flip_batch_generator(test_x, test_y, batch_size = mc_batch_size)
-
-### Model Architecture
-###############################################################################
-# Clear Session (this removes any trained model from your PC's memory)
-train_start_time = time.time()
-keras.backend.clear_session()
-
-# 19-Layer CNN
-model = cnn_19_layer(n_classes = 3, kernel_size = 3)
-
-
-### Model Fitting
-###############################################################################
-# Keras Model Checkpoints (used for early stopping & logging epoch accuracy)
-check_point = keras.callbacks.ModelCheckpoint(m.config_model_save_name, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')
-early_stop = keras.callbacks.EarlyStopping(monitor = 'val_loss', mode = 'min',  patience = 15)
-csv_logger = keras.callbacks.CSVLogger(m.config_csv_save_name)
-
-
-# Define Model Compilation
-model.compile(loss='categorical_crossentropy',
-              optimizer = Adam(),
-              metrics = ['categorical_accuracy'])
-
-model.fit(train_gen,
-          epochs = mc_epochs,
-          validation_data = valid_gen,
-          steps_per_epoch = tsteps,
-          validation_steps = vsteps,
-          callbacks = [check_point, early_stop, csv_logger, lr_schedule.lr_scheduler()],
-          class_weight = class_weight_dict)
-
-train_end_time = time.time()
-m.sec_to_time_elapsed(train_end_time, train_start_time)
-
-
-### Plot Model Progress
-###############################################################################
-# Accuracy
-m.plot_training_progress(csv_file_path = m.config_csv_save_name,
-                         train_metric = 'categorical_accuracy',
-                         validation_metric = 'val_categorical_accuracy')
-
-# Entropy (Loss)
-m.plot_training_progress(csv_file_path = m.config_csv_save_name,
-                         train_metric = 'loss',
-                         validation_metric = 'val_loss')
-
-
-
-
-
-### Model Test Set Prediction
-###############################################################################
-# Predict with Model on Test Set
-saved_model = keras.models.load_model(m.config_model_save_name)
-pred_values = model.predict(test_x)
-
-# Accuracy on Test Set
-true_pos = [int(pred_values[i,np.argmax(test_y[i])] >= 0.5) for i in range(test_y.shape[0])]
-true_neg = mf.unnest_list_of_lists([[int(y < 0.5) for i, y in enumerate(pred_values[r,:]) if i != np.argmax(test_y[r])] for r in range(test_y.shape[0])])
-true_agg = true_pos + true_neg
-pd.DataFrame({'accuracy' : [sum(true_agg) / len(true_agg)],
-              'true positive rate' : [sum(true_pos) / len(true_pos)],
-              'true negative rate' : [sum(true_neg) / len(true_neg)]})
-
-
-
-acc = np.mean(np.equal(np.argmax(test_y, axis=-1), np.argmax(pred_values, axis=-1)))
-ac = np.mean(np.diff(np.argmax(test_y, axis=-1), np.argmax(pred_values, axis=-1)))
-    
-    
-    
-# Look at Some Predictions
-def temp_plot_test_obs(n = 20):
-    for i in range(n):
-        random_test_obs = random.choice(list(range(test_x.shape[0])))
-        class_dict = {0 : 'Chest of drawers', 1 : 'Fireplace', 2 : 'Sofa bed'}
-        class_probs = [class_dict.get(i) + ":  " + str(round(x*100,5)) + "%" for i, x in enumerate(pred_values[random_test_obs])]
-        actual = class_dict.get(np.argmax(test_y[random_test_obs]))
-        plt.imshow(test_x[random_test_obs])
-        plt.title("Actual: {a}".format(a = actual) + "\n" + "\n".join(class_probs))
-        plt.show()
-
-temp_plot_test_obs(n = 10)
