@@ -275,7 +275,7 @@ def rn_conv_block(input_x, kernel_size, filters, strides=(2, 2), l2_reg = 0.0000
 
 
 
-def resnet_conv_n_layer(kernel_size = (3,3), img_height = 200,
+def resnet_conv_31_layer(kernel_size = (3,3), img_height = 200,
                          img_width = 200, color_mode = 'rgb', 
                          activ = 'relu', n_classes = 3):
     # Input shape
@@ -468,7 +468,7 @@ lr_schedule = m.CyclicalRateSchedule(min_lr = 0.000015,
 cross_validator = ArchitectureCrossValidator(x = x, y = y,
                                              model_list = [cnn_10_layer(n_classes = 5, kernel_size = 3),
                                                            cnn_19_layer(n_classes = 5, kernel_size = 3),
-                                                           resnet_conv_n_layer(n_classes = 5, kernel_size = (3,3))],
+                                                           resnet_conv_31_layer(n_classes = 5, kernel_size = (3,3))],
                                          lr_schedule = lr_schedule.lr_scheduler(),
                                          batch_generator = image_flip_batch_generator,
                                          batch_size = 20,
