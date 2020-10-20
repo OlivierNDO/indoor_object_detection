@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="python3">
+  <head>
+    <meta charset="utf-8" />
+    <title>Miscellaneous Function Module &#8212; Indoor Object Detection 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="miscellaneous-function-module">
+<h1>Miscellaneous Function Module<a class="headerlink" href="#miscellaneous-function-module" title="Permalink to this headline">¶</a></h1>
+<p>This <a class="reference external" href="https://github.com/OlivierNDO/indoor_object_detection/blob/master/src/misc_functions.py">module</a> houses general functions and classes used for data manipulation and reading files from Google Cloud Storage Buckets.</p>
+<p>The source module with all importable scripts is located <a class="reference external" href="https://github.com/OlivierNDO/indoor_object_detection/blob/master/src/">here</a>.</p>
+<span class="target" id="module-src.misc_functions"></span><dl class="function">
+<dt id="src.misc_functions.create_folder_if_not_existing">
+<code class="sig-prename descclassname">src.misc_functions.</code><code class="sig-name descname">create_folder_if_not_existing</code><span class="sig-paren">(</span><em class="sig-param">folder_path</em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc_functions.create_folder_if_not_existing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use os to create a folder if it does not already exist on the machine</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>folder_path (str): folder path to conditionally create</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.misc_functions.gcs_subfolder_exists">
+<code class="sig-prename descclassname">src.misc_functions.</code><code class="sig-name descname">gcs_subfolder_exists</code><span class="sig-paren">(</span><em class="sig-param">bucket_name</em>, <em class="sig-param">subfolder_name</em>, <em class="sig-param">local_gcs_json_path='C:/gcs_auth/iod_google_cred.json'</em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc_functions.gcs_subfolder_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether subfolder exists in a Google Cloud Storage Bucket</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>bucket_name (str): name of Google Cloud Storage bucket
+subfolder_name (str): name of subfolder to check for
+local_gcs_json_path (str): path on local system to Google Cloud json authentication file</p>
+</dd>
+<dt>Returns:</dt><dd><p>boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.misc_functions.get_unique_count_dict">
+<code class="sig-prename descclassname">src.misc_functions.</code><code class="sig-name descname">get_unique_count_dict</code><span class="sig-paren">(</span><em class="sig-param">lst</em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc_functions.get_unique_count_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate and return dictionary with counts of unique items in a list</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>lst (list): list for which to generate unique element counts</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.misc_functions.index_slice_list">
+<code class="sig-prename descclassname">src.misc_functions.</code><code class="sig-name descname">index_slice_list</code><span class="sig-paren">(</span><em class="sig-param">lst</em>, <em class="sig-param">indices</em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc_functions.index_slice_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Slice a list by a list of indices (positions)</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>lst (list): list to subset
+indices (list): positions to use in subsetting lst</p>
+</dd>
+<dt>Returns:</dt><dd><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.misc_functions.list_gcs_bucket_files">
+<code class="sig-prename descclassname">src.misc_functions.</code><code class="sig-name descname">list_gcs_bucket_files</code><span class="sig-paren">(</span><em class="sig-param">bucket_name</em>, <em class="sig-param">local_gcs_json_path='C:/gcs_auth/iod_google_cred.json'</em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc_functions.list_gcs_bucket_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>List file names in GCS bucket</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>bucket_name (str): name of Google Cloud Storage bucket
+local_gcs_json_path (str): path on local system to Google Cloud json authentication file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.misc_functions.print_timestamp_message">
+<code class="sig-prename descclassname">src.misc_functions.</code><code class="sig-name descname">print_timestamp_message</code><span class="sig-paren">(</span><em class="sig-param">message</em>, <em class="sig-param">timestamp_format='%Y-%m-%d %H:%M:%S'</em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc_functions.print_timestamp_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print formatted timestamp followed by custom message</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>message (str): string to concatenate with timestamp
+timestamp_format (str): format for datetime string. defaults to '%Y-%m-%d %H:%M:%S'</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.misc_functions.read_gcs_csv_to_pandas">
+<code class="sig-prename descclassname">src.misc_functions.</code><code class="sig-name descname">read_gcs_csv_to_pandas</code><span class="sig-paren">(</span><em class="sig-param">bucket_name</em>, <em class="sig-param">file_name</em>, <em class="sig-param">encoding='utf-8'</em>, <em class="sig-param">header='infer'</em>, <em class="sig-param">nrows=None</em>, <em class="sig-param">local_gcs_json_path='C:/gcs_auth/iod_google_cred.json'</em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc_functions.read_gcs_csv_to_pandas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a csv file from a Google Cloud bucket to a local pandas.DataFrame() object</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>bucket_name (str): name of Google Cloud Storage bucket
+file_name (str): file name of csv object in bucket
+encoding (str): encoding of csv object. defaults to 'utf-8'
+header (str | int): header argument passed to pandas.read_csv(). defaults to 'infer'
+local_gcs_json_path (str): path on local system to Google Cloud json authentication file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.misc_functions.read_gcs_numpy_array">
+<code class="sig-prename descclassname">src.misc_functions.</code><code class="sig-name descname">read_gcs_numpy_array</code><span class="sig-paren">(</span><em class="sig-param">bucket_name</em>, <em class="sig-param">file_name</em>, <em class="sig-param">local_gcs_json_path='C:/gcs_auth/iod_google_cred.json'</em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc_functions.read_gcs_numpy_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a numpy array (.npy file) from a Google Cloud Storage Bucket</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>bucket_name (str): name of Google Cloud Storage bucket
+file_name (str): file name of .npy file in bucket
+local_gcs_json_path (str): path on local system to Google Cloud json authentication file</p>
+</dd>
+<dt>Returns:</dt><dd><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.misc_functions.save_np_array_to_gsc">
+<code class="sig-prename descclassname">src.misc_functions.</code><code class="sig-name descname">save_np_array_to_gsc</code><span class="sig-paren">(</span><em class="sig-param">np_array</em>, <em class="sig-param">bucket_name</em>, <em class="sig-param">file_name</em>, <em class="sig-param">local_gcs_json_path='C:/gcs_auth/iod_google_cred.json'</em>, <em class="sig-param">print_ts=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc_functions.save_np_array_to_gsc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save numpy array to Google Cloud Storage bucket as .npy file. Writes a temporary file to your local system, uploads to GCS, and removes from local.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>np_array (numpy.array): numpy array to save in GCS
+bucket_name (str): name of Google Cloud Storage bucket
+file_name (str): file name of csv object in bucket
+local_gcs_json_path (str): path on local system to Google Cloud json authentication file
+print_ts (boolean): if True, print timestamp message. defaults to True.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.misc_functions.unnest_list_of_lists">
+<code class="sig-prename descclassname">src.misc_functions.</code><code class="sig-name descname">unnest_list_of_lists</code><span class="sig-paren">(</span><em class="sig-param">LOL</em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc_functions.unnest_list_of_lists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unnest a list of lists</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>LOL (list): nested list of lists</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.misc_functions.write_csv_to_gcs">
+<code class="sig-prename descclassname">src.misc_functions.</code><code class="sig-name descname">write_csv_to_gcs</code><span class="sig-paren">(</span><em class="sig-param">dframe</em>, <em class="sig-param">bucket_name</em>, <em class="sig-param">file_name</em>, <em class="sig-param">local_gcs_json_path='C:/gcs_auth/iod_google_cred.json'</em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc_functions.write_csv_to_gcs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a csv file to a Google Cloud bucket from a local pandas.DataFrame() object</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dframe (pandas.DataFrame): pandas DataFrame object to store in google cloud storage bucket
+bucket_name (str): name of Google Cloud Storage bucket
+file_name (str): file name of csv object in bucket
+local_gcs_json_path (str): path on local system to Google Cloud json authentication file</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Indoor Object Detection</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://github.com/OlivierNDO/indoor_object_detection/">🚀 Github</a></li>
+    
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Chris Chapa, Nick Olivier, Ritika De.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/misc_functions.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,302 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="python3">
+  <head>
+    <meta charset="utf-8" />
+    <title>Image Manipulation Module &#8212; Indoor Object Detection 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="image-manipulation-module">
+<h1>Image Manipulation Module<a class="headerlink" href="#image-manipulation-module" title="Permalink to this headline">¶</a></h1>
+<p>This <a class="reference external" href="https://github.com/OlivierNDO/indoor_object_detection/blob/master/src/image_manipulation.py">module</a> houses functions and classes used in manipulating images and their numpy arrays.</p>
+<p>The source module with all importable scripts is located <a class="reference external" href="https://github.com/OlivierNDO/indoor_object_detection/blob/master/src/">here</a>.</p>
+<span class="target" id="module-src.image_manipulation"></span><dl class="class">
+<dt id="src.image_manipulation.OpenCVCroppedImageRetriever">
+<em class="property">class </em><code class="sig-prename descclassname">src.image_manipulation.</code><code class="sig-name descname">OpenCVCroppedImageRetriever</code><span class="sig-paren">(</span><em class="sig-param">class_name</em>, <em class="sig-param">local_gcs_json_path='C:/gcs_auth/iod_google_cred.json'</em>, <em class="sig-param">image_id_col='ImageID'</em>, <em class="sig-param">bucket_name='open_images_v6_source_files'</em>, <em class="sig-param">processed_bucket_subfolder='processed_files/'</em>, <em class="sig-param">processed_array_save_name='train_images_cropped.npy'</em>, <em class="sig-param">resize_height=200</em>, <em class="sig-param">resize_width=200</em>, <em class="sig-param">max_images=5000</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.OpenCVCroppedImageRetriever" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve, process, and crop via bounding box before saving images from Google Open Images V6 URLs</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>class_name (str): class name corresponding to subset of images</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="src.image_manipulation.OpenCVCroppedImageRetriever.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">class_name</em>, <em class="sig-param">local_gcs_json_path='C:/gcs_auth/iod_google_cred.json'</em>, <em class="sig-param">image_id_col='ImageID'</em>, <em class="sig-param">bucket_name='open_images_v6_source_files'</em>, <em class="sig-param">processed_bucket_subfolder='processed_files/'</em>, <em class="sig-param">processed_array_save_name='train_images_cropped.npy'</em>, <em class="sig-param">resize_height=200</em>, <em class="sig-param">resize_width=200</em>, <em class="sig-param">max_images=5000</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.OpenCVCroppedImageRetriever.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="src.image_manipulation.OpenCVCroppedImageRetriever.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#src.image_manipulation.OpenCVCroppedImageRetriever.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="src.image_manipulation.OpenCVImageClassRetriever">
+<em class="property">class </em><code class="sig-prename descclassname">src.image_manipulation.</code><code class="sig-name descname">OpenCVImageClassRetriever</code><span class="sig-paren">(</span><em class="sig-param">class_name</em>, <em class="sig-param">local_gcs_json_path='C:/gcs_auth/iod_google_cred.json'</em>, <em class="sig-param">bucket_name='open_images_v6_source_files'</em>, <em class="sig-param">processed_bucket_subfolder='processed_files/'</em>, <em class="sig-param">processed_array_save_name='train_images.npy'</em>, <em class="sig-param">processed_bbox_save_name='train_bbox.csv'</em>, <em class="sig-param">processed_class_save_name='train_class_df.csv'</em>, <em class="sig-param">img_csv_path='train-images-boxable-with-rotation.csv'</em>, <em class="sig-param">annotation_csv_path='train-annotations-human-imagelabels-boxable.csv'</em>, <em class="sig-param">bbox_csv_path='oidv6-train-annotations-bbox.csv'</em>, <em class="sig-param">class_desc_csv_path='class-descriptions-boxable.csv'</em>, <em class="sig-param">image_id_col='ImageID'</em>, <em class="sig-param">image_url_col='OriginalURL'</em>, <em class="sig-param">resize_height=200</em>, <em class="sig-param">resize_width=200</em>, <em class="sig-param">max_images=5000</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.OpenCVImageClassRetriever" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve, process, and save images from Google Open Images V6 URLs</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>class_name (str): class name corresponding to subset of images
+bucket_name (str): Google Storage Bucket to read csv files from
+img_csv_path (str): csv file path to train images information (contains URLs, image IDs, etc.)
+annotation_csv_path (str): csv file path to annotation file (object label information)
+bbox_csv_path (str): csv file path to bounding box coordinate file (bounding box dimensions)
+class_desc_csv_path (str): csv file path class description mapping
+image_id_col (str): column name convention in Google Open Images used for the image identifier
+image_url_col (str): column name convention in Google Open Images used for URL reading</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="src.image_manipulation.OpenCVImageClassRetriever.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">class_name</em>, <em class="sig-param">local_gcs_json_path='C:/gcs_auth/iod_google_cred.json'</em>, <em class="sig-param">bucket_name='open_images_v6_source_files'</em>, <em class="sig-param">processed_bucket_subfolder='processed_files/'</em>, <em class="sig-param">processed_array_save_name='train_images.npy'</em>, <em class="sig-param">processed_bbox_save_name='train_bbox.csv'</em>, <em class="sig-param">processed_class_save_name='train_class_df.csv'</em>, <em class="sig-param">img_csv_path='train-images-boxable-with-rotation.csv'</em>, <em class="sig-param">annotation_csv_path='train-annotations-human-imagelabels-boxable.csv'</em>, <em class="sig-param">bbox_csv_path='oidv6-train-annotations-bbox.csv'</em>, <em class="sig-param">class_desc_csv_path='class-descriptions-boxable.csv'</em>, <em class="sig-param">image_id_col='ImageID'</em>, <em class="sig-param">image_url_col='OriginalURL'</em>, <em class="sig-param">resize_height=200</em>, <em class="sig-param">resize_width=200</em>, <em class="sig-param">max_images=5000</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.OpenCVImageClassRetriever.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="src.image_manipulation.OpenCVImageClassRetriever.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#src.image_manipulation.OpenCVImageClassRetriever.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="src.image_manipulation.OpenCVMultiClassProcessor">
+<em class="property">class </em><code class="sig-prename descclassname">src.image_manipulation.</code><code class="sig-name descname">OpenCVMultiClassProcessor</code><span class="sig-paren">(</span><em class="sig-param">class_list</em>, <em class="sig-param">max_images=None</em>, <em class="sig-param">random_state=9242020</em>, <em class="sig-param">resize_height=200</em>, <em class="sig-param">resize_width=200</em>, <em class="sig-param">test_size=0.2</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.OpenCVMultiClassProcessor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around OpenCVImageClassRetriever() class to retrieve and process
+images and bounding boxes from multiple classes</p>
+<dl class="method">
+<dt id="src.image_manipulation.OpenCVMultiClassProcessor.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">class_list</em>, <em class="sig-param">max_images=None</em>, <em class="sig-param">random_state=9242020</em>, <em class="sig-param">resize_height=200</em>, <em class="sig-param">resize_width=200</em>, <em class="sig-param">test_size=0.2</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.OpenCVMultiClassProcessor.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="src.image_manipulation.OpenCVMultiClassProcessor.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#src.image_manipulation.OpenCVMultiClassProcessor.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="src.image_manipulation.extract_image_subset">
+<code class="sig-prename descclassname">src.image_manipulation.</code><code class="sig-name descname">extract_image_subset</code><span class="sig-paren">(</span><em class="sig-param">img_arr</em>, <em class="sig-param">xmin</em>, <em class="sig-param">xmax</em>, <em class="sig-param">ymin</em>, <em class="sig-param">ymax</em>, <em class="sig-param">decimal=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.extract_image_subset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve subset of 3d numpy array using decimal coordinates
+(i.e. portion of image with bounding box)</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>img_arr (np.array): 3d numpy array of image
+xmin (float): minimum X-coordinate (expressed as decimal)
+xmax (float): maximum X-coordinate (expressed as decimal)
+ymin (float): minimum Y-coordinate (expressed as decimal)
+ymax (float): maximum Y-coordinate (expressed as decimal)
+decimal (bool): True / False. Indicates whether inputs are decimal positions or integer.</p>
+</dd>
+<dt>Returns:</dt><dd><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.image_manipulation.img_add_flip">
+<code class="sig-prename descclassname">src.image_manipulation.</code><code class="sig-name descname">img_add_flip</code><span class="sig-paren">(</span><em class="sig-param">arr</em>, <em class="sig-param">flip_horiz=True</em>, <em class="sig-param">flip_vert=False</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.img_add_flip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flip numpy array horizontally and/or vertically</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>arr: three dimensional numpy array
+flip_horiz: flip image horizontally
+flip_vert: flip image vertically</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.image_manipulation.load_resize_images_from_files">
+<code class="sig-prename descclassname">src.image_manipulation.</code><code class="sig-name descname">load_resize_images_from_files</code><span class="sig-paren">(</span><em class="sig-param">full_file_paths</em>, <em class="sig-param">resize_height</em>, <em class="sig-param">resize_width</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.load_resize_images_from_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load images and resize according to function arguments</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>full_file_paths: list of saved image files
+resize_height: height of resized output images
+resize_width: width of resized output images</p>
+</dd>
+<dt>Depdendencies:</dt><dd><p>numpy
+skimage.transform.resize
+tensorflow.keras.preprocessing.image.load_img</p>
+</dd>
+<dt>Returns:</dt><dd><p>numpy array of resized images</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.image_manipulation.load_resize_images_from_urls">
+<code class="sig-prename descclassname">src.image_manipulation.</code><code class="sig-name descname">load_resize_images_from_urls</code><span class="sig-paren">(</span><em class="sig-param">url_list</em>, <em class="sig-param">resize_height</em>, <em class="sig-param">resize_width</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.load_resize_images_from_urls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load images from list of URLs and resize according to function arguments</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>url_list: list of image URLs
+resize_height: height of resized output images
+resize_width: width of resized output images</p>
+</dd>
+<dt>Depdendencies:</dt><dd><p>numpy
+skimage.transform.resize
+tensorflow.keras.preprocessing.image.load_img</p>
+</dd>
+<dt>Returns:</dt><dd><p>4d numpy array of resized images</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.image_manipulation.make_class_weight_dict">
+<code class="sig-prename descclassname">src.image_manipulation.</code><code class="sig-name descname">make_class_weight_dict</code><span class="sig-paren">(</span><em class="sig-param">train_y_labels</em>, <em class="sig-param">return_dict=False</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.make_class_weight_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return dictionary of inverse class weights for imbalanced response</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>train_y_labels: training set response variable (list or numpy array)
+return_dict: if True, return dictionary of classes &amp; weights..else return list of classes and list of weights</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.image_manipulation.plot_image_bounding_box">
+<code class="sig-prename descclassname">src.image_manipulation.</code><code class="sig-name descname">plot_image_bounding_box</code><span class="sig-paren">(</span><em class="sig-param">img_arr</em>, <em class="sig-param">xmin</em>, <em class="sig-param">xmax</em>, <em class="sig-param">ymin</em>, <em class="sig-param">ymax</em>, <em class="sig-param">label</em>, <em class="sig-param">box_color='red'</em>, <em class="sig-param">text_color='red'</em>, <em class="sig-param">fontsize=11</em>, <em class="sig-param">linewidth=1</em>, <em class="sig-param">y_offset=-10</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.plot_image_bounding_box" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a matplotlib image plot with one or more bounding boxes</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>img_array (numpy.array): numpy array of image
+xmin (list): list of x-minimum coordinates (expressed as percentages)
+xmax (list): list of x-maximum coordinates (expressed as percentages)
+ymin (list): list of y-minimum coordinates (expressed as percentages)
+ymax (list): list of y-maximum coordinates (expressed as percentages)
+label (list): list of bounding box labels
+box_color (str): color to use in bounding box edge (defaults to 'red')
+text_color (str): color to use in text label (defaults to 'red')
+fontsize (int): size to use for label font (defaults to 11)
+linewidth (int): size to use for box edge line width (defaults to 1)
+y_offset (int): how far to offset text label from upper-left corner of bounding box (defaults to -10)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.image_manipulation.read_url_image">
+<code class="sig-prename descclassname">src.image_manipulation.</code><code class="sig-name descname">read_url_image</code><span class="sig-paren">(</span><em class="sig-param">url</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.read_url_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read image from URL with .jpg or .png extension</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>url (str): url character string</p>
+</dd>
+<dt>Returns:</dt><dd><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.image_manipulation.remove_blank_images">
+<code class="sig-prename descclassname">src.image_manipulation.</code><code class="sig-name descname">remove_blank_images</code><span class="sig-paren">(</span><em class="sig-param">x_arr</em>, <em class="sig-param">y_arr</em>, <em class="sig-param">bbox_arr</em><span class="sig-paren">)</span><a class="headerlink" href="#src.image_manipulation.remove_blank_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>For ordered pair of x and y arrays, remove arrays with blank images in X</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>x_arr (numpy.array): 4d numpy array (images)
+y_arr (numpy.array): array or nested list with dependent variable
+bbox_arr (numpy.array): array of bounding box coordinates</p>
+</dd>
+<dt>Returns:</dt><dd><p>x (numpy.array), y (numpy.array), bbox (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Indoor Object Detection</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://github.com/OlivierNDO/indoor_object_detection/">🚀 Github</a></li>
+    
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Chris Chapa, Nick Olivier, Ritika De.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/image_manipulation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

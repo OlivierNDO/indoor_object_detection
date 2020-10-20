@@ -1,0 +1,437 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="python3">
+  <head>
+    <meta charset="utf-8" />
+    <title>Modeling Module &#8212; Indoor Object Detection 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="modeling-module">
+<h1>Modeling Module<a class="headerlink" href="#modeling-module" title="Permalink to this headline">¶</a></h1>
+<p>This <a class="reference external" href="https://github.com/OlivierNDO/indoor_object_detection/blob/master/src/modeling.py">module</a> houses functions and classes used in model fitting and cross validation.</p>
+<p>The source module with all importable scripts is located <a class="reference external" href="https://github.com/OlivierNDO/indoor_object_detection/blob/master/src/">here</a>.</p>
+<span class="target" id="module-src.modeling"></span><dl class="class">
+<dt id="src.modeling.CyclicalRateSchedule">
+<em class="property">class </em><code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">CyclicalRateSchedule</code><span class="sig-paren">(</span><em class="sig-param">min_lr=1e-05</em>, <em class="sig-param">max_lr=0.0006</em>, <em class="sig-param">warmup_epochs=5</em>, <em class="sig-param">cooldown_epochs=5</em>, <em class="sig-param">cycle_length=10</em>, <em class="sig-param">n_epochs=100</em>, <em class="sig-param">logarithmic=False</em>, <em class="sig-param">decrease_factor=None</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.CyclicalRateSchedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of cyclical learning rates with the first &lt;warmup_epochs&gt; using minimum value</p>
+<dl>
+<dt>Args:</dt><dd><p>min_lr: minimum learning rate in cycle and learning rate during the first &lt;warmup_epochs&gt; epochs
+max_lr: maximum learning rate in cycle
+warmup_epochs: the number of initial epochs for which to run the minimum learning rate
+cooldown_epochs: the number of epochs after each cycle to run the minimum learning rate
+cycle_length: the number of epochs between min and max learning rates
+n_epochs: number of epochs for which to generate a learning rate
+logarithmic: if true, increase rates logarithmically (rather than linearly) during cycle
+decrease_factor: reduction factor for rates in consecutive cycles;</p>
+<blockquote>
+<div><p>e.g. 0.9 will reduce each cycle by 10% of the prior cycle</p>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="method">
+<dt id="src.modeling.CyclicalRateSchedule.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">min_lr=1e-05</em>, <em class="sig-param">max_lr=0.0006</em>, <em class="sig-param">warmup_epochs=5</em>, <em class="sig-param">cooldown_epochs=5</em>, <em class="sig-param">cycle_length=10</em>, <em class="sig-param">n_epochs=100</em>, <em class="sig-param">logarithmic=False</em>, <em class="sig-param">decrease_factor=None</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.CyclicalRateSchedule.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="src.modeling.CyclicalRateSchedule.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#src.modeling.CyclicalRateSchedule.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.augment_batch_gen">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">augment_batch_gen</code><span class="sig-paren">(</span><em class="sig-param">img_gen</em>, <em class="sig-param">augment_gen</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.augment_batch_gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply Keras ImageDataGenerator to batch generation function</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>img_gen: batch generator object
+augment_gen: Keras ImageDataGenerator object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.color_distort_arr">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">color_distort_arr</code><span class="sig-paren">(</span><em class="sig-param">arr</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.color_distort_arr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distort rgb ratio of numpy array</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.distort_oversamp_img">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">distort_oversamp_img</code><span class="sig-paren">(</span><em class="sig-param">arr</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.distort_oversamp_img" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply distortions to oversampled image array
+Args:</p>
+<blockquote>
+<div><p>arr (numpy.array): 3d numpy array</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.img_add_flip">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">img_add_flip</code><span class="sig-paren">(</span><em class="sig-param">arr</em>, <em class="sig-param">flip_horiz=True</em>, <em class="sig-param">flip_vert=False</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.img_add_flip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flip numpy array horizontally and/or vertically</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>arr: three dimensional numpy array
+flip_horiz: flip image horizontally
+flip_vert: flip image vertically</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.load_resize_images">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">load_resize_images</code><span class="sig-paren">(</span><em class="sig-param">full_file_paths</em>, <em class="sig-param">resize_height</em>, <em class="sig-param">resize_width</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.load_resize_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load images and resize according to function arguments</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>full_file_paths: list of saved image files
+resize_height: height of resized output images
+resize_width: width of resized output images</p>
+</dd>
+<dt>Depdendencies:</dt><dd><p>numpy
+skimage.transform.resize
+tensorflow.keras.preprocessing.image.load_img</p>
+</dd>
+<dt>Returns:</dt><dd><p>numpy array of resized images</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.make_class_weight_dict">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">make_class_weight_dict</code><span class="sig-paren">(</span><em class="sig-param">train_y_labels</em>, <em class="sig-param">return_dict=False</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.make_class_weight_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return dictionary of inverse class weights for imbalanced response</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>train_y_labels: training set response variable (list or numpy array)
+return_dict: if True, return dictionary of classes &amp; weights..else return list of classes and list of weights</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.multiclass_acc_eval">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">multiclass_acc_eval</code><span class="sig-paren">(</span><em class="sig-param">class_list</em>, <em class="sig-param">pred_probs</em>, <em class="sig-param">test_y</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.multiclass_acc_eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate sensitivity, specificity, and accuracy for numpy array of predicted probabilities</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>class_list: list of classes being predicted (strings)
+pred_probs: numpy array of class probabilities corresponding to test set
+test_y: list of categorical classes corresponding to test set (strings)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.np_array_to_batch_gen">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">np_array_to_batch_gen</code><span class="sig-paren">(</span><em class="sig-param">x_arr</em>, <em class="sig-param">y_arr</em>, <em class="sig-param">batch_size=20</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.np_array_to_batch_gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create Keras generator objects for minibatch training</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>x_arr: array of predictors
+y_arr: array of targets
+batch_size: size of minibatches</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.np_array_to_batch_gen_aug">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">np_array_to_batch_gen_aug</code><span class="sig-paren">(</span><em class="sig-param">x_arr</em>, <em class="sig-param">y_arr</em>, <em class="sig-param">batch_size=20</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.np_array_to_batch_gen_aug" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Create Keras generator objects for minibatch training</dt><dd><p>&gt; apply mild color distortion and rotation to every image
+&gt; every second array is flipped horizontally
+&gt; every fifth array has 10 random 20 x 20 chunks filled with mean color
+&gt; every ninth array has 70% zoom applied on random coordinates
+&gt; every seventh array has a 15% crop of the left, right, bottom or top
+&gt; every eleventh array is flipped vertically</p>
+</dd>
+<dt>Args:</dt><dd><p>x_arr: array of predictors
+y_arr: array of targets
+batch_size: size of minibatches</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.plot_random_test_pred">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">plot_random_test_pred</code><span class="sig-paren">(</span><em class="sig-param">test_y_list</em>, <em class="sig-param">pred_arr</em>, <em class="sig-param">class_list</em>, <em class="sig-param">img_arr</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.plot_random_test_pred" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot random image and its predicted values for  each class</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>test_y_list: list of response values being predicted
+pred_arr: predicted probability array
+class_list: list of classes in column-wise order of &lt;pred_arr&gt;
+img_arr: array from which to sample image</p>
+</dd>
+<dt>Dependencies:</dt><dd><p>random, numpy, matplotlib.pyplot</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.plot_training_progress">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">plot_training_progress</code><span class="sig-paren">(</span><em class="sig-param">csv_file_path</em>, <em class="sig-param">train_metric</em>, <em class="sig-param">validation_metric</em>, <em class="sig-param">train_color='blue'</em>, <em class="sig-param">validation_color='orange'</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.plot_training_progress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot training progress using Keras csv logger as input</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>csv_file_path: path to csv created by keras.callbacks.CSVLogger
+train_metric: name of column used for training evaluation (e.g. 'acc')
+validation_metric: name of column used for validation evaluation (e.g. 'val_acc')</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.rand_coords_missing">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">rand_coords_missing</code><span class="sig-paren">(</span><em class="sig-param">arr</em>, <em class="sig-param">n_chunks=10</em>, <em class="sig-param">chunk_size=20</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.rand_coords_missing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fill random square chunks of picture with noise based on the batch mean and standard deviation</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>arr (numpy.array): 3d numpy array
+n_chunks (integer): number of chunks to remove
+chunk_size (integer): dimension of chunks to remove</p>
+</dd>
+<dt>Returns:</dt><dd><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.rand_crop_arr">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">rand_crop_arr</code><span class="sig-paren">(</span><em class="sig-param">arr</em>, <em class="sig-param">perc_pixels=0.15</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.rand_crop_arr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Crop the left or right &lt;perc_pixels&gt; from a 3d numpy array (left or right is chosen randomly)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.random_coords_zoom">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">random_coords_zoom</code><span class="sig-paren">(</span><em class="sig-param">arr</em>, <em class="sig-param">zoom_perc=0.7</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.random_coords_zoom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Zoom in on &lt;zoom_perc&gt; of numpy 3d array image</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.rebalance_classes">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">rebalance_classes</code><span class="sig-paren">(</span><em class="sig-param">x_arr</em>, <em class="sig-param">y_arr</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.rebalance_classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rebalance image classes using oversampling and horizontal flips to reduce redundancy</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>x_arr: 4d numpy array of images
+y_arr: 1d array of class labels</p>
+</dd>
+<dt>Returns:</dt><dd><p>x and y arrays with oversampled images appended</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.rn_conv_block">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">rn_conv_block</code><span class="sig-paren">(</span><em class="sig-param">input_x</em>, <em class="sig-param">kernel_size</em>, <em class="sig-param">filters</em>, <em class="sig-param">strides=(2</em>, <em class="sig-param">2)</em>, <em class="sig-param">l2_reg=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.rn_conv_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Residual Network Convolutional Block: Three-layer block where the shortcut (input) has a convolutional layer applied to it</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>input_x: tensor input
+kernel_size: size of convolutional kernel (integer)
+filters: list of three filter sizes to use in layer block</p>
+</dd>
+<dt>Returns:</dt><dd><p>tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.rn_id_block">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">rn_id_block</code><span class="sig-paren">(</span><em class="sig-param">input_x</em>, <em class="sig-param">kernel_size</em>, <em class="sig-param">filters</em>, <em class="sig-param">l2_reg=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.rn_id_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Residual Network Identity Block: Three-layer block where the shortcut (input) does not have a convolutional layer applied to it</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>input_x: tensor input
+kernel_size: size of convolutional kernel (integer)
+filters: list of three filter sizes to use in layer block</p>
+</dd>
+<dt>Returns:</dt><dd><p>tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.rotate_arr">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">rotate_arr</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">max_angle=20</em>, <em class="sig-param">min_angle=-20</em>, <em class="sig-param">bg_patch=(5</em>, <em class="sig-param">5)</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.rotate_arr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate image and use mean color for edges</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.sec_to_time_elapsed">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">sec_to_time_elapsed</code><span class="sig-paren">(</span><em class="sig-param">end_tm</em>, <em class="sig-param">start_tm</em>, <em class="sig-param">return_time=False</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.sec_to_time_elapsed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply seconds_to_time function to start and end times</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>end_tm (float): unix timestamp representing end time
+start_tm (float): unix timestamp representing start time</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.seconds_to_time">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">seconds_to_time</code><span class="sig-paren">(</span><em class="sig-param">sec</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.seconds_to_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert seconds (integer or float) to time in 'hh:mm:ss' format
+Args:</p>
+<blockquote>
+<div><p>sec (int | float): number of seconds</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.separable_resnet_stack">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">separable_resnet_stack</code><span class="sig-paren">(</span><em class="sig-param">x_input</em>, <em class="sig-param">n_filters=728</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.separable_resnet_stack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stack of 3 separable convolutional layers with input added back as in resnet architecture</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>x: input array (should not have activation already applied to it)
+n_filters: number of filters in each convolutional layer (integer)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.shuffle_three_lists">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">shuffle_three_lists</code><span class="sig-paren">(</span><em class="sig-param">list_a</em>, <em class="sig-param">list_b</em>, <em class="sig-param">list_c</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.shuffle_three_lists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomly shuffle two lists with the same order, return numpy arrays</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>list_a: first list you want to shuffle
+list_b: second list you want to shuffle
+list_c: third list you want to shuffle</p>
+</dd>
+<dt>Dependencies:</dt><dd><p>numpy (import as np)
+operator.itemgetter
+random</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.shuffle_two_lists">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">shuffle_two_lists</code><span class="sig-paren">(</span><em class="sig-param">list_a</em>, <em class="sig-param">list_b</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.shuffle_two_lists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomly shuffle two lists with the same order, return numpy arrays</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>list_a: first list you want to shuffle
+list_b: second list you want to shuffle</p>
+</dd>
+<dt>Dependencies:</dt><dd><p>numpy (import as np)
+operator.itemgetter
+random</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.modeling.xception_conv">
+<code class="sig-prename descclassname">src.modeling.</code><code class="sig-name descname">xception_conv</code><span class="sig-paren">(</span><em class="sig-param">n_classes=5</em>, <em class="sig-param">img_h=200</em>, <em class="sig-param">img_w=200</em>, <em class="sig-param">n_channels=3</em><span class="sig-paren">)</span><a class="headerlink" href="#src.modeling.xception_conv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keras implementation of Xception architecture created by Francois Chollet (<a class="reference external" href="https://arxiv.org/abs/1610.02357">https://arxiv.org/abs/1610.02357</a>)</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>n_classes: number of classes - used in softmax layer
+img_h: input image height
+img_w: input image width
+n_channels: number of channels in input image (3 for rgb)</p>
+</dd>
+<dt>Returns:</dt><dd><p>Keras Model() object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Indoor Object Detection</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://github.com/OlivierNDO/indoor_object_detection/">🚀 Github</a></li>
+    
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Chris Chapa, Nick Olivier, Ritika De.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/modeling.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
