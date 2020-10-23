@@ -34,6 +34,7 @@ import src.misc_functions as mf
 def img_add_flip(arr, flip_horiz = True, flip_vert = False):
     """
     Flip numpy array horizontally and/or vertically
+    
     Args:
         arr: three dimensional numpy array
         flip_horiz: flip image horizontally
@@ -51,6 +52,7 @@ def img_add_flip(arr, flip_horiz = True, flip_vert = False):
 def read_url_image(url):
     """
     Read image from URL with .jpg or .png extension
+    
     Args:
         url (str): url character string
     Returns:
@@ -64,6 +66,7 @@ def read_url_image(url):
 def load_resize_images_from_files(full_file_paths, resize_height, resize_width):
     """
     Load images and resize according to function arguments
+    
     Args:
         full_file_paths: list of saved image files
         resize_height: height of resized output images
@@ -83,6 +86,7 @@ def load_resize_images_from_files(full_file_paths, resize_height, resize_width):
 def load_resize_images_from_urls(url_list, resize_height, resize_width):
     """
     Load images from list of URLs and resize according to function arguments
+    
     Args:
         url_list: list of image URLs
         resize_height: height of resized output images
@@ -109,6 +113,7 @@ def extract_image_subset(img_arr, xmin, xmax, ymin, ymax, decimal = True):
     """
     Retrieve subset of 3d numpy array using decimal coordinates
     (i.e. portion of image with bounding box)
+    
     Args:
         img_arr (np.array): 3d numpy array of image
         xmin (float): minimum X-coordinate (expressed as decimal)
@@ -132,6 +137,7 @@ def plot_image_bounding_box(img_arr, xmin, xmax, ymin, ymax, label,
                             fontsize = 11, linewidth = 1, y_offset = -10):
     """
     Create a matplotlib image plot with one or more bounding boxes
+    
     Args:
         img_array (numpy.array): numpy array of image
         xmin (list): list of x-minimum coordinates (expressed as percentages)
@@ -172,6 +178,7 @@ def plot_image_bounding_box(img_arr, xmin, xmax, ymin, ymax, label,
 class OpenCVImageClassRetriever:
     """
     Retrieve, process, and save images from Google Open Images V6 URLs
+    
     Args:
         class_name (str): class name corresponding to subset of images
         bucket_name (str): Google Storage Bucket to read csv files from
@@ -330,6 +337,7 @@ class OpenCVImageClassRetriever:
 def make_class_weight_dict(train_y_labels, return_dict = False):
     """
     Return dictionary of inverse class weights for imbalanced response
+    
     Args:
         train_y_labels: training set response variable (list or numpy array)
         return_dict: if True, return dictionary of classes & weights..else return list of classes and list of weights
@@ -353,6 +361,7 @@ def make_class_weight_dict(train_y_labels, return_dict = False):
 def remove_blank_images(x_arr, y_arr, bbox_arr):
     """
     For ordered pair of x and y arrays, remove arrays with blank images in X
+    
     Args:
         x_arr (numpy.array): 4d numpy array (images)
         y_arr (numpy.array): array or nested list with dependent variable
@@ -495,6 +504,7 @@ def is_blank_img(img_arr, nonzero_threshold = 0.2):
 class OpenCVCroppedImageRetriever:
     """
     Retrieve, process, and crop via bounding box before saving images from Google Open Images V6 URLs
+    
     Args:
         class_name (str): class name corresponding to subset of images
     """

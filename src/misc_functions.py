@@ -28,12 +28,18 @@ import src.image_manipulation as imm
 ### Define Functions and Classes
 ###############################################################################
 def unnest_list_of_lists(LOL):
-    """unnest list of lists"""
+    """
+    Unnest a list of lists
+    
+    Args:
+        LOL (list): nested list of lists
+    """
     return list(itertools.chain.from_iterable(LOL))
 
 def index_slice_list(lst, indices):
     """
     Slice a list by a list of indices (positions)
+    
     Args:
         lst (list): list to subset
         indices (list): positions to use in subsetting lst
@@ -50,6 +56,7 @@ def index_slice_list(lst, indices):
 def get_unique_count_dict(lst):
     """
     Generate and return dictionary with counts of unique items in a list
+    
     Args:
         lst (list): list for which to generate unique element counts
     """
@@ -61,6 +68,7 @@ def get_unique_count_dict(lst):
 def print_timestamp_message(message, timestamp_format = '%Y-%m-%d %H:%M:%S'):
     """
     Print formatted timestamp followed by custom message
+    
     Args:
         message (str): string to concatenate with timestamp
         timestamp_format (str): format for datetime string. defaults to '%Y-%m-%d %H:%M:%S'
@@ -71,7 +79,8 @@ def print_timestamp_message(message, timestamp_format = '%Y-%m-%d %H:%M:%S'):
 
 def create_folder_if_not_existing(folder_path):
     """
-    Use os to create a folder if it does not already exist on the machien
+    Use os to create a folder if it does not already exist on the machine
+    
     Args:
         folder_path (str): folder path to conditionally create
     """
@@ -86,6 +95,7 @@ def create_folder_if_not_existing(folder_path):
 def read_gcs_csv_to_pandas(bucket_name, file_name, encoding = 'utf-8', header = 'infer', nrows = None, local_gcs_json_path = cdp.config_gcs_auth_json_path):
     """
     Read a csv file from a Google Cloud bucket to a local pandas.DataFrame() object
+    
     Args:
         bucket_name (str): name of Google Cloud Storage bucket
         file_name (str): file name of csv object in bucket
@@ -105,6 +115,7 @@ def read_gcs_csv_to_pandas(bucket_name, file_name, encoding = 'utf-8', header = 
 def write_csv_to_gcs(dframe, bucket_name, file_name, local_gcs_json_path = cdp.config_gcs_auth_json_path):
     """
     Write a csv file to a Google Cloud bucket from a local pandas.DataFrame() object
+    
     Args:
         dframe (pandas.DataFrame): pandas DataFrame object to store in google cloud storage bucket
         bucket_name (str): name of Google Cloud Storage bucket
@@ -121,6 +132,7 @@ def write_csv_to_gcs(dframe, bucket_name, file_name, local_gcs_json_path = cdp.c
 def read_gcs_numpy_array(bucket_name, file_name, local_gcs_json_path = cdp.config_gcs_auth_json_path):
     """
     Read a numpy array (.npy file) from a Google Cloud Storage Bucket
+    
     Args:
         bucket_name (str): name of Google Cloud Storage bucket
         file_name (str): file name of .npy file in bucket
@@ -137,8 +149,8 @@ def read_gcs_numpy_array(bucket_name, file_name, local_gcs_json_path = cdp.confi
 
 def save_np_array_to_gsc(np_array, bucket_name, file_name, local_gcs_json_path = cdp.config_gcs_auth_json_path, print_ts = True):
     """
-    Save numpy array to Google Cloud Storage bucket as .npy file.
-    Writes a temporary file to your local system, uploads to GCS, and removes from local.
+    Save numpy array to Google Cloud Storage bucket as .npy file. Writes a temporary file to your local system, uploads to GCS, and removes from local.
+    
     Args:
         np_array (numpy.array): numpy array to save in GCS
         bucket_name (str): name of Google Cloud Storage bucket
@@ -161,6 +173,7 @@ def save_np_array_to_gsc(np_array, bucket_name, file_name, local_gcs_json_path =
 def list_gcs_bucket_files(bucket_name, local_gcs_json_path = cdp.config_gcs_auth_json_path):
     """
     List file names in GCS bucket
+    
     Args:
         bucket_name (str): name of Google Cloud Storage bucket
         local_gcs_json_path (str): path on local system to Google Cloud json authentication file
@@ -176,6 +189,7 @@ def list_gcs_bucket_files(bucket_name, local_gcs_json_path = cdp.config_gcs_auth
 def gcs_subfolder_exists(bucket_name, subfolder_name, local_gcs_json_path = cdp.config_gcs_auth_json_path):
     """
     Check whether subfolder exists in a Google Cloud Storage Bucket
+    
     Args:
         bucket_name (str): name of Google Cloud Storage bucket
         subfolder_name (str): name of subfolder to check for

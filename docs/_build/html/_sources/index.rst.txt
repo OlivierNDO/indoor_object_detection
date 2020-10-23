@@ -8,8 +8,11 @@ Welcome to Indoor Object Detection's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
+   image_manipulation
+   proc_open_images
+   misc_functions
+   modeling
 
 
 Indices and tables

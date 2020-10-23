@@ -1,4 +1,4 @@
-e### Overview
+### Overview
 ###############################################################################
 # Processing images for selected classes and writing files to Google Cloud
 

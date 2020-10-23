@@ -80,7 +80,13 @@ config_l2_reg = 0.00001
 
 
 def seconds_to_time(sec):
-    """convert seconds (integer or float) to time in 'hh:mm:ss' format"""
+    """
+    Convert seconds (integer or float) to time in 'hh:mm:ss' format
+    Args:
+        sec (int | float): number of seconds
+    Returns:
+        string
+    """
     if (sec // 3600) == 0:
         HH = '00'
     elif (sec // 3600) < 10:
@@ -100,8 +106,13 @@ def seconds_to_time(sec):
     return HH + ':' + MM + ':' + SS + ' (hh:mm:ss)'
 
 def sec_to_time_elapsed(end_tm, start_tm, return_time = False):
-    """apply seconds_to_time function to start and end times
-       * dependency on seconds_to_time() function *"""
+    """
+    Apply seconds_to_time function to start and end times
+    
+    Args:
+        end_tm (float): unix timestamp representing end time
+        start_tm (float): unix timestamp representing start time
+    """
     sec_elapsed = (np.float64(end_tm) - np.float64(start_tm))
     if return_time:
         return seconds_to_time(sec_elapsed)
@@ -111,6 +122,7 @@ def sec_to_time_elapsed(end_tm, start_tm, return_time = False):
 def make_class_weight_dict(train_y_labels, return_dict = False):
     """
     Return dictionary of inverse class weights for imbalanced response
+    
     Args:
         train_y_labels: training set response variable (list or numpy array)
         return_dict: if True, return dictionary of classes & weights..else return list of classes and list of weights
@@ -134,6 +146,7 @@ def make_class_weight_dict(train_y_labels, return_dict = False):
 def load_resize_images(full_file_paths, resize_height, resize_width):
     """
     Load images and resize according to function arguments
+    
     Args:
         full_file_paths: list of saved image files
         resize_height: height of resized output images
@@ -154,6 +167,7 @@ def load_resize_images(full_file_paths, resize_height, resize_width):
 def img_add_flip(arr, flip_horiz = True, flip_vert = False):
     """
     Flip numpy array horizontally and/or vertically
+    
     Args:
         arr: three dimensional numpy array
         flip_horiz: flip image horizontally
@@ -171,6 +185,10 @@ def img_add_flip(arr, flip_horiz = True, flip_vert = False):
 def distort_oversamp_img(arr):
     """
     Apply distortions to oversampled image array
+    Args:
+        arr (numpy.array): 3d numpy array
+    Returns:
+        numpy.array
     """
     temp = img_add_flip(arr, flip_horiz = True, flip_vert = False)
     h_croplow = int(random.sample(list(range(30, int(temp.shape[0]/2))),1)[0])
@@ -188,6 +206,7 @@ def distort_oversamp_img(arr):
 def rebalance_classes(x_arr, y_arr):
     """
     Rebalance image classes using oversampling and horizontal flips to reduce redundancy
+    
     Args:
         x_arr: 4d numpy array of images
         y_arr: 1d array of class labels
@@ -212,6 +231,7 @@ def rebalance_classes(x_arr, y_arr):
 def np_array_to_batch_gen(x_arr, y_arr, batch_size = 20):
     """
     Create Keras generator objects for minibatch training
+    
     Args:
         x_arr: array of predictors
         y_arr: array of targets
@@ -231,6 +251,13 @@ def np_array_to_batch_gen(x_arr, y_arr, batch_size = 20):
 def rand_coords_missing(arr, n_chunks = 10, chunk_size = 20):
     """
     Fill random square chunks of picture with noise based on the batch mean and standard deviation
+    
+    Args:
+        arr (numpy.array): 3d numpy array
+        n_chunks (integer): number of chunks to remove
+        chunk_size (integer): dimension of chunks to remove
+    Returns:
+        numpy array
     """    
     arr_copy = arr.copy()
     for i in range(n_chunks):
@@ -244,8 +271,7 @@ def rand_coords_missing(arr, n_chunks = 10, chunk_size = 20):
 
 def rand_crop_arr(arr, perc_pixels = 0.15) :
     """
-    Crop the left or right <perc_pixels> from a 3d numpy array
-    > left or right is chosen randomly
+    Crop the left or right <perc_pixels> from a 3d numpy array (left or right is chosen randomly)
     """
     arr_copy = arr.copy()
     side_choice = random.choice([0,1,2,3])
@@ -313,6 +339,7 @@ def np_array_to_batch_gen_aug(x_arr, y_arr, batch_size = 20):
         > every ninth array has 70% zoom applied on random coordinates
         > every seventh array has a 15% crop of the left, right, bottom or top
         > every eleventh array is flipped vertically
+        
     Args:
         x_arr: array of predictors
         y_arr: array of targets
@@ -338,6 +365,7 @@ def np_array_to_batch_gen_aug(x_arr, y_arr, batch_size = 20):
 def augment_batch_gen(img_gen, augment_gen):
     """
     Apply Keras ImageDataGenerator to batch generation function
+    
     Args:
         img_gen: batch generator object
         augment_gen: Keras ImageDataGenerator object
@@ -491,8 +519,8 @@ def conv_12_layer_nobn(dense_dropout = config_dense_dropout, conv_dropout = conf
 
 def rn_id_block(input_x, kernel_size, filters, l2_reg = config_l2_reg):
     """
-    Residual Network Identity Block
-        Three-layer block where the shortcut (input) does not have a convolutional layer applied to it
+    Residual Network Identity Block: Three-layer block where the shortcut (input) does not have a convolutional layer applied to it
+    
     Args:
         input_x: tensor input
         kernel_size: size of convolutional kernel (integer)
@@ -522,8 +550,8 @@ def rn_id_block(input_x, kernel_size, filters, l2_reg = config_l2_reg):
 
 def rn_conv_block(input_x, kernel_size, filters, strides=(2, 2), l2_reg = config_l2_reg):
     """
-    Residual Network Convolutional Block
-        Three-layer block where the shortcut (input) has a convolutional layer applied to it
+    Residual Network Convolutional Block: Three-layer block where the shortcut (input) has a convolutional layer applied to it
+    
     Args:
         input_x: tensor input
         kernel_size: size of convolutional kernel (integer)
@@ -591,14 +619,6 @@ def resnet_conv_small(kernel_size = (3,3), img_height = config_img_height,
     
     model = Model(inputs = x_input, outputs = x, name = 'resnet_50_layer') 
     return model
-
-
-
-
-
-
-
-
 
 
 def resnet_conv_50_layer(kernel_size = (3,3), img_height = config_img_height,
@@ -718,6 +738,7 @@ def resnet_conv_70_layer(kernel_size = (3,3), dense_dropout = config_dense_dropo
 def separable_resnet_stack(x_input, n_filters = 728):
     """
     Stack of 3 separable convolutional layers with input added back as in resnet architecture
+    
     Args:
         x: input array (should not have activation already applied to it)
         n_filters: number of filters in each convolutional layer (integer)
@@ -743,6 +764,7 @@ def separable_resnet_stack(x_input, n_filters = 728):
 def xception_conv(n_classes = 5, img_h = config_img_height, img_w = config_img_width, n_channels = 3):
     """
     Keras implementation of Xception architecture created by Francois Chollet (https://arxiv.org/abs/1610.02357)
+    
     Args:
         n_classes: number of classes - used in softmax layer
         img_h: input image height
@@ -814,6 +836,7 @@ def xception_conv(n_classes = 5, img_h = config_img_height, img_w = config_img_w
 class CyclicalRateSchedule:
     """
     Return a list of cyclical learning rates with the first <warmup_epochs> using minimum value
+    
     Args:
         min_lr: minimum learning rate in cycle and learning rate during the first <warmup_epochs> epochs
         max_lr: maximum learning rate in cycle
@@ -883,6 +906,7 @@ class CyclicalRateSchedule:
 def shuffle_two_lists(list_a, list_b):
     """
     Randomly shuffle two lists with the same order, return numpy arrays
+    
     Args:
         list_a: first list you want to shuffle
         list_b: second list you want to shuffle
@@ -915,6 +939,7 @@ def shuffle_two_lists(list_a, list_b):
 def shuffle_three_lists(list_a, list_b, list_c):
     """
     Randomly shuffle two lists with the same order, return numpy arrays
+    
     Args:
         list_a: first list you want to shuffle
         list_b: second list you want to shuffle
@@ -951,6 +976,7 @@ def shuffle_three_lists(list_a, list_b, list_c):
 def multiclass_acc_eval(class_list, pred_probs, test_y):
     """
     Evaluate sensitivity, specificity, and accuracy for numpy array of predicted probabilities
+    
     Args:
         class_list: list of classes being predicted (strings)
         pred_probs: numpy array of class probabilities corresponding to test set
@@ -980,6 +1006,7 @@ def multiclass_acc_eval(class_list, pred_probs, test_y):
 def plot_random_test_pred(test_y_list, pred_arr, class_list, img_arr):
     """
     Plot random image and its predicted values for  each class
+    
     Args:
         test_y_list: list of response values being predicted
         pred_arr: predicted probability array
@@ -1001,6 +1028,7 @@ def plot_training_progress(csv_file_path, train_metric, validation_metric,
                            train_color = 'blue', validation_color = 'orange'):
     """
     Plot training progress using Keras csv logger as input
+    
     Args:
         csv_file_path: path to csv created by keras.callbacks.CSVLogger
         train_metric: name of column used for training evaluation (e.g. 'acc')
