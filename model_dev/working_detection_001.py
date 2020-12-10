@@ -175,7 +175,103 @@ def cnn_19_layer_regression(output_shape, kernel_size, dense_dropout = 0.5, img_
     return model    
 
 
+def batch_generator(x_arr, y_arr, batch_size = 20):
+    """
+    Create Keras generator objects for minibatch training
+    Args:
+        x_arr: array of predictors
+        y_arr: array of targets
+        batch_size: size of minibatches
+    """
+    indices = np.arange(len(x_arr)) 
+    batch_list = []
+    while True:
+            np.random.shuffle(indices) 
+            for i in indices:
+                batch_list.append(i)
+                if len(batch_list)==batch_size:
+                    yield x_arr[batch_list], y_arr[batch_list]
+                    batch_list=[]
 
+
+
+### Model Configuration
+###############################################################################
+# Parameters
+mc_model_save_name = 'C:/keras_model_save/sofa_bed_detector.hdf5'
+mc_csv_log_save_name = 'C:/keras_epoch_results/sofabed_epoch_results.csv'
+mc_batch_size = 20
+mc_epochs = 400
+mc_learning_rate = 0.001
+mc_dropout = 0.2
+
+# Calculate Training Steps
+tsteps = int(train_x.shape[0]) // mc_batch_size
+vsteps = int(valid_x.shape[0]) // mc_batch_size
+
+# Create Learning Rate Schedule
+lr_schedule = m.CyclicalRateSchedule(min_lr = 0.000015,
+                                     max_lr = 0.00025,
+                                     n_epochs = 400,
+                                     warmup_epochs = 5,
+                                     cooldown_epochs = 1,
+                                     cycle_length = 10,
+                                     logarithmic = True,
+                                     decrease_factor = 0.9)
+
+lr_schedule.plot_cycle()
+
+# Create Augmentation Generator Objects
+train_gen = batch_generator(train_x, train_y, batch_size = mc_batch_size)
+valid_gen = batch_generator(valid_x, valid_y, batch_size = mc_batch_size)
+test_gen = batch_generator(test_x, test_y, batch_size = mc_batch_size)
+
+
+### Model Architecture
+###############################################################################
+# Clear Session (this removes any trained model from your PC's memory)
+train_start_time = time.time()
+keras.backend.clear_session()
+
+
+# 19-Layer CNN
+model = cnn_19_layer_regression(output_shape = 4, kernel_size = 3)
+#model.compile('adadelta', 'mse')
+
+### Model Fitting
+###############################################################################
+# Keras Model Checkpoints (used for early stopping & logging epoch accuracy)
+check_point = keras.callbacks.ModelCheckpoint(mc_model_save_name, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')
+early_stop = keras.callbacks.EarlyStopping(monitor = 'val_loss', mode = 'min',  patience = 15)
+csv_logger = keras.callbacks.CSVLogger(mc_csv_log_save_name)
+
+
+# Define Model Compilation
+model.compile(loss='mse',
+              optimizer = Adam(),
+              metrics = ['accuracy'])
+
+model.fit(train_gen,
+          epochs = mc_epochs,
+          validation_data = valid_gen,
+          steps_per_epoch = tsteps,
+          validation_steps = vsteps,
+          callbacks = [check_point, early_stop, csv_logger, lr_schedule.lr_scheduler()])
+
+train_end_time = time.time()
+m.sec_to_time_elapsed(train_end_time, train_start_time)
+
+
+
+
+epoch_results = pd.read_csv(m.config_csv_save_name)
+plt.plot(epoch_results['epoch'], epoch_results['loss'])
+plt.show()
+
+
+
+
+"""
 ### Define and Fit Regression Model
 ###############################################################################
 # Model Definition
@@ -244,6 +340,30 @@ for epoch in range(num_epochs_flipping):
     print(f'Mean IOU: {mean_iou}')
     print(f'Mean dist: {mean_dist}')
     print(f'Mean mse: {mean_mse}')
+
+
+
+"""
+### Try Predictions
+###############################################################################c
+
+
+pred_test = model.predict(test_x)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
