@@ -68,12 +68,12 @@ ct_img_id_list, ct_coord_list, ct_img_arr = ct_image_retriever.get_whole_images_
 
 # Test a Few
 plot_i = 20
-imm.plot_image_bounding_box(img_arr = img_arr[plot_i],
-                            xmin = [coord_list[plot_i][0]],
-                            xmax = [coord_list[plot_i][1]],
-                            ymin = [coord_list[plot_i][2]],
-                            ymax = [coord_list[plot_i][3]],
-                            label = [get_class],
+imm.plot_image_bounding_box(img_arr = ct_img_arr[plot_i],
+                            xmin = [ct_coord_list[plot_i][0]],
+                            xmax = [ct_coord_list[plot_i][1]],
+                            ymin = [ct_coord_list[plot_i][2]],
+                            ymax = [ct_coord_list[plot_i][3]],
+                            label = ['Coffee Table'],
                             box_color = 'red',
                             text_color = 'red', 
                             fontsize = 11,
@@ -97,15 +97,80 @@ def unique_list_counts(input_list):
     output_df = pd.DataFrame({'value' : list(keys), 'freq' : list(counts)})
     return output_df
 
-img_id_counts = unique_list_counts(img_id_list)
-single_obj_img_id_list = list(set(img_id_counts[img_id_counts.freq == 1]['value']))
+
+# Television
+tv_img_id_counts = unique_list_counts(tv_img_id_list)
+tv_single_obj_img_id_list = list(set(tv_img_id_counts[tv_img_id_counts.freq == 1]['value']))
+
+# Couch
+couch_img_id_counts = unique_list_counts(couch_img_id_list)
+couch_single_obj_img_id_list = list(set(couch_img_id_counts[couch_img_id_counts.freq == 1]['value']))
+
+# Coffee Table
+ct_img_id_counts = unique_list_counts(ct_img_id_list)
+ct_single_obj_img_id_list = list(set(ct_img_id_counts[ct_img_id_counts.freq == 1]['value']))
+
+# All
+all_single_obj_img_id_list = list(set(tv_single_obj_img_id_list + couch_single_obj_img_id_list + ct_single_obj_img_id_list))
+
+
+### Concatenate Classes
+###############################################################################
+
+
+agg_img_arr = []
+agg_coord_list = []
+agg_binary_list = []
+
+for ID in tqdm.tqdm(all_single_obj_img_id_list):
+    if ID in tv_single_obj_img_id_list:
+        tv_coords = tv_coord_list[tv_img_id_list.index(ID)]
+        img_x = tv_img_arr[tv_img_id_list.index(ID)]
+        tv = 1
+    else:
+        tv_coords = [0, 0, 0, 0]
+        tv = 0
+        
+    if ID in couch_single_obj_img_id_list:
+        couch_coords = couch_coord_list[couch_img_id_list.index(ID)]
+        img_x = couch_img_arr[couch_img_id_list.index(ID)]
+        couch = 1
+    else:
+        couch_coords = [0, 0, 0, 0]
+        couch = 0
+        
+    if ID in ct_single_obj_img_id_list:
+        ct_coords = ct_coord_list[ct_img_id_list.index(ID)]
+        img_x = ct_img_arr[ct_img_id_list.index(ID)]
+        ct = 1
+    else:
+        ct_coords = [0, 0, 0, 0]
+        ct = 0
+        
+    agg_img_arr.append(img_x)
+    agg_coord_list.append(tv_coords + couch_coords + ct_coords)
+    agg_binary_list.append([tv, couch, ct])
+    
+       
+    
+x = np.array(agg_img_arr)
+y = np.array(agg_coord_list)
+            
+        
+
+
+plt.imshow(x[0])
+
+
+
+
 
 
 # Subset Image Array
-x = np.array([z for i, z in enumerate(img_arr) if img_id_list[i] in single_obj_img_id_list])
+#x = np.array([z for i, z in enumerate(img_arr) if img_id_list[i] in single_obj_img_id_list])
 
 # Subset
-y = np.array([z for i, z in enumerate(coord_list) if img_id_list[i] in single_obj_img_id_list])
+#y = np.array([z for i, z in enumerate(coord_list) if img_id_list[i] in single_obj_img_id_list])
 
 ### Data Processing: Train, Test, Validation Split
 ###############################################################################
@@ -234,7 +299,7 @@ def cnn_x_layer_regression(output_shape, kernel_size, dense_dropout = 0.5, img_h
     x = Dropout(dense_dropout)(x)
     x = Dense(50)(x)
     x = Activation(activ)(x)
-    x = Dense(output_shape, activation = None)(x)
+    x = Dense(output_shape, activation = 'linear')(x)
     
     # Model object
     model = Model(inputs = x_input, outputs = x, name = 'conv_19_layer_regression') 
@@ -264,8 +329,8 @@ def batch_generator(x_arr, y_arr, batch_size = 20):
 ### Model Configuration
 ###############################################################################
 # Parameters
-mc_model_save_name = 'C:/keras_model_save/sofa_bed_detector.hdf5'
-mc_csv_log_save_name = 'C:/keras_epoch_results/sofabed_epoch_results.csv'
+mc_model_save_name = 'C:/keras_model_save/couch_tv_coffee_table_detector.hdf5'
+mc_csv_log_save_name = 'C:/keras_epoch_results/couch_tv_coffee_table_epoch_results.csv'
 mc_batch_size = 20
 mc_epochs = 400
 mc_learning_rate = 0.001
@@ -278,7 +343,7 @@ vsteps = int(valid_x.shape[0]) // mc_batch_size
 # Create Learning Rate Schedule
 lr_schedule = m.CyclicalRateSchedule(min_lr = 0.000015,
                                      max_lr = 0.00025,
-                                     n_epochs = 400,
+                                     n_epochs = 100,
                                      warmup_epochs = 15,
                                      cooldown_epochs = 1,
                                      cycle_length = 10,
@@ -301,7 +366,7 @@ keras.backend.clear_session()
 
 
 # 19-Layer CNN
-model = cnn_x_layer_regression(output_shape = 4, kernel_size = 3)
+model = cnn_x_layer_regression(output_shape = train_y.shape[-1], kernel_size = 3)
 #model.compile('adadelta', 'mse')
 
 ### Model Fitting
