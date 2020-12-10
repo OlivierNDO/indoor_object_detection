@@ -47,14 +47,11 @@ from src import misc_functions as mf
 from src import modeling as m
 
 
-
-
-
 ### Data Processing: Read Cropped Images for Classification
 ###############################################################################
 # Read Some Images, Coordinates, and Image IDs
 get_class = 'Sofa bed'
-image_retriever = imm.OpenCVCroppedImageRetriever(class_name = get_class, max_images = 100)
+image_retriever = imm.OpenCVCroppedImageRetriever(class_name = get_class, max_images = 1000)
 img_id_list, coord_list, img_arr = image_retriever.get_whole_images_and_bbox()
 
 
