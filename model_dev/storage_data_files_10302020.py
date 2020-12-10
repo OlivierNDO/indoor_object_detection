@@ -51,8 +51,7 @@ from src import modeling as m
 ###############################################################################
 
 # Cropped 'Chest of drawers' Images
-get_class = 'Chest of drawers'
-
+get_class = 'Sofa bed'
 cropped_images = mf.read_gcs_numpy_array(bucket_name = cdp.config_source_bucket_name, file_name = f'processed_files/{get_class}/train_images_cropped.npy')
 whole_images = mf.read_gcs_numpy_array(bucket_name = cdp.config_source_bucket_name, file_name = f'processed_files/{get_class}/train_images.npy')
 bbox_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket_name, file_name = f'processed_files/{get_class}/train_bbox.csv')
@@ -61,6 +60,24 @@ bbox_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket_name,
 
 
 
+### Data Processing: Read Cropped Images for Classification
+###############################################################################
+
+get_class = 'Sofa bed'
+
+image_retriever = imm.OpenCVCroppedImageRetriever(class_name = get_class, max_images = 100)
+
+coord_list, img_arr = image_retriever.get_whole_images_and_bbox()
+
+
+
+
+
+
+
+
+
+image_retriever.cropped_obj_images_to_gcs()
 
 
 
@@ -74,6 +91,56 @@ bbox_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket_name,
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+plt.imshow(whole_images[0])
+
+
+bbox_coords = bbox_df_i[['XMin', 'XMax', 'YMin', 'YMax']].values.tolist()
+
+imm.plot_image_bounding_box(img_arr = whole_images[0],
+                            xmin = [bbox_df.XMin[0]],
+                            xmax = [bbox_df.XMax[0]],
+                            ymin = [bbox_df.YMin[0]],
+                            ymax = [bbox_df.YMax[0]],
+                            label = [get_class],
+                            box_color = 'red',
+                            text_color = 'red', 
+                            fontsize = 11,
+                            linewidth = 1,
+                            y_offset = -10)
+
+
+
+img_sub = imm.extract_image_subset(img_arr = whole_images[0],
+                                   xmin = bbox_df.XMin[0],
+                                   xmax = bbox_df.XMax[0],
+                                   ymin = bbox_df.YMin[0],
+                                   ymax = bbox_df.YMax[0],
+                                   decimal = True)
+
+plt.imshow(img_sub)
+
+xx = 0
+
+plt.imshow(cropped_images[xx])
+
+plt.imshow(whole_images[xx])
+
+print(bbox_df.loc[xx])
 
 
 

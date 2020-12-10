@@ -535,6 +535,43 @@ class OpenCVCroppedImageRetriever:
         # Reference Google Cloud Authentication Document
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = self.local_gcs_json_path
         
+        
+    def get_whole_images_and_bbox(self):
+        # Retrieve Class Metadata
+        image_retriever = OpenCVImageClassRetriever(class_name = self.class_name)
+        bbox_df = image_retriever.get_bounding_box_df()
+        desc_df = image_retriever.get_class_desc_df()
+        
+        # Image IDs
+        unique_img_ids = list(np.unique(bbox_df[self.image_id_col].values.tolist()))
+        if self.max_images is not None:
+            unique_img_ids = unique_img_ids[:self.max_images]
+        
+        # Read and Crop Images with Bounding Boxes
+        img_list = []
+        coord_list = []
+        for img_id in tqdm.tqdm(unique_img_ids):
+            try:
+                # Subset Info Dataframes for Image ID
+                bbox_df_i = bbox_df[bbox_df.ImageID == img_id]
+                desc_df_i = desc_df[desc_df.ImageID == img_id]
+                
+                # Read Image
+                img_i = read_url_image(desc_df_i['OriginalURL'].values[0])
+            
+                # Extract Cropped Objects
+                bbox_coords = bbox_df_i[['XMin', 'XMax', 'YMin', 'YMax']].values.tolist()
+                for bbc in bbox_coords:
+                    xmin, xmax, ymin, ymax = bbc
+                    img_resized = resize(img_i, (self.resize_width, self.resize_height))
+                    correct_shape = (self.resize_width, self.resize_height, 3)
+                    if (not is_blank_img(img_resized) and img_resized.shape == correct_shape):
+                        img_list.append(img_resized)
+                        coord_list.append(bbc)
+            except:
+                pass
+        return coord_list, np.array(cropped_img_list)
+        
     
     def get_cropped_obj_images(self):
         # Retrieve Class Metadata
