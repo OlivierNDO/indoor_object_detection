@@ -64,10 +64,8 @@ bbox_df = mf.read_gcs_csv_to_pandas(bucket_name = cdp.config_source_bucket_name,
 ###############################################################################
 
 get_class = 'Sofa bed'
-
 image_retriever = imm.OpenCVCroppedImageRetriever(class_name = get_class, max_images = 100)
-
-coord_list, img_arr = image_retriever.get_whole_images_and_bbox()
+img_id_list, coord_list, img_arr = image_retriever.get_whole_images_and_bbox()
 
 
 

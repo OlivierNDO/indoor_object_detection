@@ -548,6 +548,7 @@ class OpenCVCroppedImageRetriever:
             unique_img_ids = unique_img_ids[:self.max_images]
         
         # Read and Crop Images with Bounding Boxes
+        img_id_list = []
         img_list = []
         coord_list = []
         for img_id in tqdm.tqdm(unique_img_ids):
@@ -568,9 +569,10 @@ class OpenCVCroppedImageRetriever:
                     if (not is_blank_img(img_resized) and img_resized.shape == correct_shape):
                         img_list.append(img_resized)
                         coord_list.append(bbc)
+                        img_id_list.append(img_id)
             except:
                 pass
-        return coord_list, np.array(cropped_img_list)
+        return img_id_list, coord_list, np.array(img_list)
         
     
     def get_cropped_obj_images(self):
