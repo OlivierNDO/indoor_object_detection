@@ -260,10 +260,36 @@ m.sec_to_time_elapsed(train_end_time, train_start_time)
 
 
 
+### Model Evaluation
+###############################################################################
+# Training Progress
+m.plot_training_progress(csv_file_path = mc_csv_log_save_name,
+                         train_metric = 'loss',
+                         validation_metric = 'val_loss')
 
-epoch_results = pd.read_csv(m.config_csv_save_name)
-plt.plot(epoch_results['epoch'], epoch_results['loss'])
-plt.show()
+
+# Predict with Model on Test Set
+saved_model = keras.models.load_model(mc_model_save_name)
+pred_values = model.predict(test_x)
+
+
+
+
+
+plot_i = 150
+imm.plot_image_bounding_box(img_arr = test_x[plot_i],
+                            xmin = [pred_values[plot_i][0]],
+                            xmax = [pred_values[plot_i][1]],
+                            ymin = [pred_values[plot_i][2]],
+                            ymax = [pred_values[plot_i][3]],
+                            label = [get_class],
+                            box_color = 'red',
+                            text_color = 'red', 
+                            fontsize = 11,
+                            linewidth = 1,
+                            y_offset = -10)
+
+
 
 
 
