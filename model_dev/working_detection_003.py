@@ -67,7 +67,7 @@ ct_img_id_list, ct_coord_list, ct_img_arr = ct_image_retriever.get_whole_images_
 
 
 # Test a Few
-plot_i = 20
+plot_i = random.choice(range(len(ct_coord_list)))
 imm.plot_image_bounding_box(img_arr = ct_img_arr[plot_i],
                             xmin = [ct_coord_list[plot_i][0]],
                             xmax = [ct_coord_list[plot_i][1]],
