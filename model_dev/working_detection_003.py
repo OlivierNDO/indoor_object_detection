@@ -124,27 +124,27 @@ agg_binary_list = []
 
 for ID in tqdm.tqdm(all_single_obj_img_id_list):
     if ID in tv_single_obj_img_id_list:
-        tv_coords = tv_coord_list[tv_img_id_list.index(ID)]
+        tv_coords = tv_coord_list[tv_img_id_list.index(ID)] +  [1]
         img_x = tv_img_arr[tv_img_id_list.index(ID)]
         tv = 1
     else:
-        tv_coords = [0, 0, 0, 0]
+        tv_coords = [0, 0, 0, 0] + [0]
         tv = 0
         
     if ID in couch_single_obj_img_id_list:
-        couch_coords = couch_coord_list[couch_img_id_list.index(ID)]
+        couch_coords = couch_coord_list[couch_img_id_list.index(ID)] + [1]
         img_x = couch_img_arr[couch_img_id_list.index(ID)]
         couch = 1
     else:
-        couch_coords = [0, 0, 0, 0]
+        couch_coords = [0, 0, 0, 0] + [0]
         couch = 0
         
     if ID in ct_single_obj_img_id_list:
-        ct_coords = ct_coord_list[ct_img_id_list.index(ID)]
+        ct_coords = ct_coord_list[ct_img_id_list.index(ID)] + [1]
         img_x = ct_img_arr[ct_img_id_list.index(ID)]
         ct = 1
     else:
-        ct_coords = [0, 0, 0, 0]
+        ct_coords = [0, 0, 0, 0] + [0]
         ct = 0
         
     agg_img_arr.append(img_x)
@@ -220,55 +220,22 @@ def dist(bbox1, bbox2):
 # Functions to Make Deeper Networks w/ Fewer Lines of Code
 def triple_conv2d(input_x, filter_size, kernel_size, activation, use_batchnorm = True, use_maxpool = False):
     # Layer 1
-    x = Conv2D(filters = filter_size, kernel_size = kernel_size, strides = (2,2), padding = 'same')(input_x)
+    x = Conv2D(filters = filter_size, kernel_size = kernel_size, strides = (2,2), padding = 'same', use_bias = False)(input_x)
     x = Activation(activation)(x)
     x = BatchNormalization()(x)
     
     # Layer 2
-    x = Conv2D(filters = filter_size, kernel_size = kernel_size, strides = (1,1), padding = 'same')(x)
+    x = Conv2D(filters = filter_size, kernel_size = kernel_size, strides = (1,1), padding = 'same', use_bias = False)(x)
     x = Activation(activation)(x)
     x = BatchNormalization()(x)
     
     # Layer 3
-    x = Conv2D(filters = filter_size, kernel_size = kernel_size, strides = (1,1), padding = 'same')(x)
+    x = Conv2D(filters = filter_size, kernel_size = kernel_size, strides = (1,1), padding = 'same', use_bias = False)(x)
     x = Activation(activation)(x)
     x = BatchNormalization()(x)
     if use_maxpool:
         x = MaxPooling2D(pool_size = (2,2))(x)
     return x
-
-
-def cnn_19_layer_regression(output_shape, kernel_size, dense_dropout = 0.5, img_height = 200, img_width = 200, activ = 'relu'):
-    
-    x_input = Input((img_height, img_width, 3))
-    
-    # Initial convolutional layer
-    x = ZeroPadding2D(padding = (kernel_size, kernel_size))(x_input)
-    x = Conv2D(50, (int(kernel_size * 2), int(kernel_size * 2)), strides = (1, 1), padding = 'valid', use_bias = False)(x)
-    x = BatchNormalization()(x)
-    x = Activation(activ)(x)
-    
-    
-    # Triple convolutional layers
-    x = triple_conv2d(x, filter_size = 50, kernel_size = (kernel_size,kernel_size), activation = activ)
-    x = triple_conv2d(x, filter_size = 100, kernel_size = (kernel_size,kernel_size), activation = activ)
-    x = triple_conv2d(x, filter_size = 150, kernel_size = (kernel_size,kernel_size), activation = activ)
-    x = triple_conv2d(x, filter_size = 200, kernel_size = (kernel_size,kernel_size), activation = activ)
-    x = triple_conv2d(x, filter_size = 150, kernel_size = (kernel_size,kernel_size), activation = activ)
-    x = triple_conv2d(x, filter_size = 100, kernel_size = (kernel_size,kernel_size), activation = activ)
-    
-    # Dense Layers
-    x = Flatten()(x)
-    x = Dense(100)(x)
-    x = Activation(activ)(x)
-    x = Dropout(dense_dropout)(x)
-    x = Dense(50)(x)
-    x = Activation(activ)(x)
-    x = Dense(output_shape, activation = "softmax")(x)
-    
-    # Model object
-    model = Model(inputs = x_input, outputs = x, name = 'conv_19_layer_regression') 
-    return model
 
 
 
@@ -278,18 +245,29 @@ def cnn_x_layer_regression(output_shape, kernel_size, dense_dropout = 0.5, img_h
     
     # Initial convolutional layer
     x = ZeroPadding2D(padding = (kernel_size, kernel_size))(x_input)
-    x = Conv2D(50, (int(kernel_size * 2), int(kernel_size * 2)), strides = (1, 1), padding = 'same')(x)
+    x = Conv2D(50, (int(kernel_size * 2), int(kernel_size * 2)), strides = (1, 1), padding = 'same', use_bias = False)(x)
     x = BatchNormalization()(x)
     x = Activation(activ)(x)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
+    
+    x = Conv2D(100, (kernel_size, kernel_size), strides = (1, 1), padding = 'same', use_bias = False)(x)
+    x = BatchNormalization()(x)
+    x = Activation(activ)(x)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
     
     
     # Triple convolutional layers
-    x = triple_conv2d(x, filter_size = 50, kernel_size = (kernel_size,kernel_size), activation = activ)
-    x = triple_conv2d(x, filter_size = 100, kernel_size = (kernel_size,kernel_size), activation = activ)
-    x = triple_conv2d(x, filter_size = 150, kernel_size = (kernel_size,kernel_size), activation = activ)
+    #x = triple_conv2d(x, filter_size = 50, kernel_size = (kernel_size,kernel_size), activation = activ)
+    #x = triple_conv2d(x, filter_size = 100, kernel_size = (kernel_size,kernel_size), activation = activ)
+    #x = triple_conv2d(x, filter_size = 150, kernel_size = (kernel_size,kernel_size), activation = activ)
     x = triple_conv2d(x, filter_size = 200, kernel_size = (kernel_size,kernel_size), activation = activ)
     x = triple_conv2d(x, filter_size = 150, kernel_size = (kernel_size,kernel_size), activation = activ)
-    x = triple_conv2d(x, filter_size = 100, kernel_size = (kernel_size,kernel_size), activation = activ)
+    x = triple_conv2d(x, filter_size = 100, kernel_size = (kernel_size,kernel_size), activation = activ, use_maxpool = True)
+    
+    x = Conv2D(200, (kernel_size, kernel_size), strides = (1, 1), padding = 'same', use_bias = False)(x)
+    x = BatchNormalization()(x)
+    x = Activation(activ)(x)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
     
     # Dense Layers
     x = Flatten()(x)
@@ -299,7 +277,7 @@ def cnn_x_layer_regression(output_shape, kernel_size, dense_dropout = 0.5, img_h
     x = Dropout(dense_dropout)(x)
     x = Dense(50)(x)
     x = Activation(activ)(x)
-    x = Dense(output_shape, activation = 'linear')(x)
+    x = Dense(output_shape)(x)
     
     # Model object
     model = Model(inputs = x_input, outputs = x, name = 'conv_19_layer_regression') 
@@ -335,6 +313,7 @@ mc_batch_size = 20
 mc_epochs = 400
 mc_learning_rate = 0.001
 mc_dropout = 0.2
+mc_patience = 40
 
 # Calculate Training Steps
 tsteps = int(train_x.shape[0]) // mc_batch_size
@@ -343,7 +322,7 @@ vsteps = int(valid_x.shape[0]) // mc_batch_size
 # Create Learning Rate Schedule
 lr_schedule = m.CyclicalRateSchedule(min_lr = 0.000015,
                                      max_lr = 0.00025,
-                                     n_epochs = 100,
+                                     n_epochs = 1000,
                                      warmup_epochs = 15,
                                      cooldown_epochs = 1,
                                      cycle_length = 10,
@@ -373,7 +352,7 @@ model = cnn_x_layer_regression(output_shape = train_y.shape[-1], kernel_size = 3
 ###############################################################################
 # Keras Model Checkpoints (used for early stopping & logging epoch accuracy)
 check_point = keras.callbacks.ModelCheckpoint(mc_model_save_name, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')
-early_stop = keras.callbacks.EarlyStopping(monitor = 'val_loss', mode = 'min',  patience = 15)
+early_stop = keras.callbacks.EarlyStopping(monitor = 'val_loss', mode = 'min',  patience = mc_patience)
 csv_logger = keras.callbacks.CSVLogger(mc_csv_log_save_name)
 
 
@@ -401,6 +380,19 @@ m.plot_training_progress(csv_file_path = mc_csv_log_save_name,
                          train_metric = 'loss',
                          validation_metric = 'val_loss')
 
+m.plot_training_progress(csv_file_path = mc_csv_log_save_name,
+                         train_metric = 'mse',
+                         validation_metric = 'val_mse')
+
+
+temp = pd.read_csv(mc_csv_log_save_name)
+
+plt.plot(temp['val_mse'])
+plt.show()
+
+plt.plot(temp['val_loss'])
+plt.show()
+
 
 # Predict with Model on Test Set
 saved_model = keras.models.load_model(mc_model_save_name)
@@ -416,7 +408,7 @@ imm.plot_image_bounding_box(img_arr = test_x[plot_i],
                             xmax = [pred_values[plot_i][1]],
                             ymin = [pred_values[plot_i][2]],
                             ymax = [pred_values[plot_i][3]],
-                            label = [get_class],
+                            label = [''],
                             box_color = 'red',
                             text_color = 'red', 
                             fontsize = 11,
