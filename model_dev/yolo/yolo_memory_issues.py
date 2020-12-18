@@ -41,7 +41,7 @@ my_project_folder = 'D:/indoor_object_detection/'
 model_save_path = cdp.config_model_save_folder
 model_save_name = 'yolo_detector.hdf5'
 
-# Path to Images
+# Path to Images (3500 images in OneDrive)
 local_image_folder = 'C:/local_images/'
 
 # Path to Text File
