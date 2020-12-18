@@ -929,6 +929,11 @@ train_batch_generator = SimpleBatchGenerator(train_image, generator_config, shuf
 yolo_model = yolo_noskip_convnet()
 optimizer = Adam()
 yolo_model.compile(loss = YoloLoss(), optimizer = optimizer)
+
+# If we run this (even though it's wrong), we don't run out of memory
+# yolo_model.compile(loss = 'categorical_crossentropy', optimizer = optimizer)
+
+
 yolo_model.summary()
 
 
@@ -955,12 +960,6 @@ yolo_model.fit(train_batch_generator,
                epochs = 5, 
                verbose = 1,
                callbacks = [early_stop, checkpoint])
-
-
-
-
-
-
 
 
 
