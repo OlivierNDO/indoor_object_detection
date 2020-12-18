@@ -894,12 +894,17 @@ class YoloLoss(keras.losses.Loss):
         # Step 8: Calculate loss for the confidence
         loss_conf = calc_loss_conf(conf_mask,true_box_conf_IOU, pred_box_conf)
         #print(f'conf_mask: {conf_mask} | true_box_conf_IOU: {true_box_conf_IOU} pred_box_conf: {pred_box_conf}')
-        loss = loss_xywh + loss_conf + loss_class
+        
+        #loss = loss_xywh + loss_conf + loss_class
+        
+        # temp (run without loss_conf)
+        loss = loss_xywh + loss_class
+        
         
         #time.sleep(3)
         #print(f'loss_xywh: {loss_xywh} ... type: {type(loss_xywh)}')
         #print(f'loss_conf: {loss_conf} ... type: {type(loss_conf)}')
-        #print(f'loss_conf: {loss_class} ... type: {type(loss_class)}')
+        #print(f'loss_class: {loss_class} ... type: {type(loss_class)}')
         #print(f'loss: {loss}')
         
         #print(f'loss_xywh: {loss_xywh} | loss_conf: {loss_conf} loss_class: {loss_class}')
@@ -963,7 +968,21 @@ yolo_model.fit(train_batch_generator,
 
 
 
+"""
 
+
+Epoch 1/5
+loss_xywh: 1.5628384351730347 ... type: <class 'tensorflow.python.framework.ops.EagerTensor'>
+
+loss_conf: Tensor("RealDiv_3:0", shape=(), dtype=float32) ... type: <class 'tensorflow.python.framework.ops.Tensor'>
+
+loss_class: 1.5242124795913696 ... type: <class 'tensorflow.python.framework.ops.EagerTensor'>
+
+loss: Tensor("AddV2_5:0", shape=(), dtype=float32)
+
+
+
+"""
 
 
 
