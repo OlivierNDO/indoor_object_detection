@@ -29,18 +29,24 @@ from io import BytesIO
 import io
 
 
+# Import Project Modules
+from src import config_data_processing as cdp
+from src import image_manipulation as imm
+from src import misc_functions as mf
+from src import modeling as m
 
-### Configuration - Packages
+### Configuration - File Paths
 ###############################################################################
-config_bucket_name = 'open_images_v6_source_files'
-config_prefix_name = 'yolo_example'
-config_weight_path = f'{config_bucket_name}'
-model_save_path = 'model_save_dir/'
+my_project_folder = 'D:/indoor_object_detection/'
+model_save_path = cdp.config_model_save_folder
 model_save_name = 'yolo_detector.hdf5'
-dict_list_save_name = 'object_dict_list.txt'
-dict_list_save_name = 'object_dict_list.txt'
-dict_write_folder = 'D:/iod_yolo_data/pascal_format/'
 
+# Path to Images
+local_image_folder = 'C:/local_images/'
+
+# Path to Text File
+dict_write_folder = f'{my_project_folder}data/processed_data/'
+dict_list_save_name = 'object_dict_list.pkl'
 
 ### Configuration - Model and Data Processing
 ###############################################################################
@@ -905,7 +911,8 @@ class YoloLoss(keras.losses.Loss):
 
 ### Load Data
 ###############################################################################
-with open(f'{dict_write_folder}{dict_list_save_name}.txt', 'rb') as fp:
+# Load Data
+with open(f'{dict_write_folder}{dict_list_save_name}', 'rb') as fp:
     train_image = pickle.load(fp)   
 
 
