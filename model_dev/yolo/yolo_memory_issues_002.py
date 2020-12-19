@@ -52,6 +52,10 @@ local_image_folder = 'C:/local_images/'
 dict_write_folder = f'{my_project_folder}data/processed_data/'
 dict_list_save_name = 'object_dict_list.pkl'
 
+# Path to Transfer Learning Weights
+weights_path = f'{my_project_folder}weights/yolo-voc.weights'
+
+
 ### Configuration - Model and Data Processing
 ###############################################################################
 generator_config = {
@@ -388,9 +392,16 @@ class WeightReader:
 ### Define Model Architecture
 ###############################################################################
 def conv_batchnorm_leaky_layer(x, neurons, kernel = (3,3), strides = (1,1),
-                               padding = 'same', use_bias = False, use_maxpooling = False, pool_size = (2,2)):
-    xx = Conv2D(neurons, kernel, strides = strides, padding = padding, use_bias=False)(x)
-    xx = BatchNormalization()(xx)
+                               padding = 'same', use_bias = False, use_maxpooling = False, pool_size = (2,2),
+                               conv_name = None, norm_name = None):
+    if conv_name is None:
+        xx = Conv2D(neurons, kernel, strides = strides, padding = padding, use_bias=False)(x)
+    else:
+        xx = Conv2D(neurons, kernel, strides = strides, padding = padding, use_bias=False, name = conv_name)(x)
+    if norm_name is None:
+        xx = BatchNormalization()(xx)
+    else:
+        xx = BatchNormalization(name = norm_name)(xx)
     xx = LeakyReLU(alpha=0.1)(xx)
     if use_maxpooling:
         xx = MaxPooling2D(pool_size = pool_size)(xx)
@@ -429,35 +440,35 @@ def yolo_v2_convnet(IMAGE_H = generator_config.get('IMAGE_H'),
     input_image = Input(shape=(IMAGE_H, IMAGE_W, 3))
     true_boxes  = Input(shape=(1, 1, 1, TRUE_BOX_BUFFER, 4))
     
-    x = conv_batchnorm_leaky_layer(x = input_image, neurons = 32, use_maxpooling = True)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 64, use_maxpooling = True)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 128)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 64, kernel = (1,1))
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 128, use_maxpooling = True)
+    x = conv_batchnorm_leaky_layer(x = input_image, neurons = 32, use_maxpooling = True, conv_name = 'conv_1', norm_name = 'norm_1')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 64, use_maxpooling = True, conv_name = 'conv_2', norm_name = 'norm_2')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 128, conv_name = 'conv_3', norm_name = 'norm_3')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 64, kernel = (1,1), conv_name = 'conv_4', norm_name = 'norm_4')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 128, use_maxpooling = True, conv_name = 'conv_5', norm_name = 'norm_5')
     
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 256)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 128)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 256, use_maxpooling = True)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 512)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 256, kernel = (1,1))
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 256, conv_name = 'conv_6', norm_name = 'norm_6')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 128, conv_name = 'conv_7', norm_name = 'norm_7')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 256, use_maxpooling = True, conv_name = 'conv_8', norm_name = 'norm_8')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 512, conv_name = 'conv_9', norm_name = 'norm_9')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 256, kernel = (1,1), conv_name = 'conv_10', norm_name = 'norm_10')
     
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 512)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 256, kernel = (1,1))
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 512)
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 512, conv_name = 'conv_11', norm_name = 'norm_11')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 256, kernel = (1,1), conv_name = 'conv_12', norm_name = 'norm_12')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 512, conv_name = 'conv_13', norm_name = 'norm_13')
     skip_connection = x
     x = MaxPooling2D(pool_size = pool_size)(x)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 1024)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 512, kernel = (1,1))
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 1024)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 512, kernel = (1,1))
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 1024)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 1024)
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 1024)
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 1024, conv_name = 'conv_14', norm_name = 'norm_14')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 512, kernel = (1,1), conv_name = 'conv_15', norm_name = 'norm_15')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 1024, conv_name = 'conv_16', norm_name = 'norm_16')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 512, kernel = (1,1), conv_name = 'conv_17', norm_name = 'norm_17')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 1024, conv_name = 'conv_18', norm_name = 'norm_18')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 1024, conv_name = 'conv_19', norm_name = 'norm_19')
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 1024, conv_name = 'conv_20', norm_name = 'norm_20')
     
-    skip_connection = conv_batchnorm_leaky_layer(x = skip_connection, neurons = 1024, kernel = (1,1))
+    skip_connection = conv_batchnorm_leaky_layer(x = skip_connection, neurons = 1024, kernel = (1,1), conv_name = 'conv_21', norm_name = 'norm_21')
     skip_connection = Lambda(space_to_depth_x2)(skip_connection)
     x = concatenate([skip_connection, x])
-    x = conv_batchnorm_leaky_layer(x = x, neurons = 1024)
+    x = conv_batchnorm_leaky_layer(x = x, neurons = 1024, conv_name = 'conv_22', norm_name = 'norm_22')
     x = Conv2D(BOX * (4 + 1 + CLASS), (1,1), strides=(1,1), padding='same', name='conv_23')(x)
     output = Reshape((GRID_H, GRID_W, BOX, 4 + 1 + CLASS))(x)
     output = Lambda(lambda args: args[0])([output, true_boxes])
@@ -767,8 +778,55 @@ train_batch_generator = SimpleBatchGenerator(train_image, generator_config, shuf
 
 ### Choose Model Architecture, Optimizer, & Compile with Custom Loss
 ###############################################################################
-yolo_model = yolo_v2_convnet()
-optimizer = Adam(lr=0.5e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+# Declare Model Variable
+model = yolo_v2_convnet()
+
+
+# Load Weights
+weight_reader = WeightReader(weights_path)
+weight_reader.reset()
+nb_conv = 21
+
+for i in range(1, nb_conv+1):
+    conv_layer = model.get_layer('conv_' + str(i))
+    print(f'Finished {i}')
+    
+    if i < nb_conv:
+        norm_layer = model.get_layer('norm_' + str(i))
+        
+        size = np.prod(norm_layer.get_weights()[0].shape)
+
+        beta  = weight_reader.read_bytes(size)
+        gamma = weight_reader.read_bytes(size)
+        mean  = weight_reader.read_bytes(size)
+        var   = weight_reader.read_bytes(size)
+
+        weights = norm_layer.set_weights([gamma, beta, mean, var])       
+        
+    if len(conv_layer.get_weights()) > 1:
+        bias   = weight_reader.read_bytes(np.prod(conv_layer.get_weights()[1].shape))
+        kernel = weight_reader.read_bytes(np.prod(conv_layer.get_weights()[0].shape))
+        kernel = kernel.reshape(list(reversed(conv_layer.get_weights()[0].shape)))
+        kernel = kernel.transpose([2,3,1,0])
+        conv_layer.set_weights([kernel, bias])
+    else:
+        kernel = weight_reader.read_bytes(np.prod(conv_layer.get_weights()[0].shape))
+        kernel = kernel.reshape(list(reversed(conv_layer.get_weights()[0].shape)))
+        kernel = kernel.transpose([2,3,1,0])
+        conv_layer.set_weights([kernel])
+
+
+
+
+
+
+
+
+
+
+
+
+optimizer = Adam(lr=0.00001)
 
 
 
@@ -783,13 +841,25 @@ loss_yolo = lf.YoloLoss(generator_config['ANCHORS'], (generator_config['GRID_W']
 
 #yolo_model.compile(loss = YoloLoss(), optimizer = optimizer)
 
-yolo_model.compile(loss = loss_yolo, optimizer = optimizer)
+model.compile(loss = loss_yolo, optimizer = optimizer)
 
 # If we run this (even though it's wrong), we don't run out of memory
 # yolo_model.compile(loss = 'categorical_crossentropy', optimizer = optimizer)
 
 
-yolo_model.summary()
+model.summary()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -819,7 +889,7 @@ lr_schedule = m.CyclicalRateSchedule(min_lr = 0.0000125,
 tf.config.run_functions_eagerly(True)
 
 # Fit
-yolo_model.fit(train_batch_generator, 
+model.fit(train_batch_generator, 
                steps_per_epoch  = len(train_batch_generator),
                epochs = 50, 
                verbose = 1,
