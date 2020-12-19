@@ -826,7 +826,7 @@ for i in range(1, nb_conv+1):
 
 
 
-optimizer = Adam(lr=0.00001)
+optimizer = Adam(lr=0.000005)
 
 
 
