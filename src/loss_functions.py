@@ -1,3 +1,4 @@
+# https://github.com/rodrigo2019/keras_yolo2/blob/master/keras_yolov2/frontend.py
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend as K

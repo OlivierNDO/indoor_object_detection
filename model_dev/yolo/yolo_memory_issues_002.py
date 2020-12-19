@@ -55,15 +55,15 @@ dict_list_save_name = 'object_dict_list.pkl'
 ### Configuration - Model and Data Processing
 ###############################################################################
 generator_config = {
-    'IMAGE_H' : 256, 
-    'IMAGE_W' : 256,
-    'GRID_H' : 8,  
-    'GRID_W' : 8,
+    'IMAGE_H' : 416, 
+    'IMAGE_W' : 416,
+    'GRID_H' : 13,  
+    'GRID_W' : 13,
     'BOX' : 5,
     'LABELS' : ['Television', 'Couch', 'Coffee table', 'Piano'],
     'CLASS' : len(['Television', 'Couch', 'Coffee table', 'Piano']),
     'ANCHORS' : [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
-    'BATCH_SIZE' : 1,
+    'BATCH_SIZE' : 4,
     'TRUE_BOX_BUFFER' : 50,
     'LAMBDA_NO_OBJECT' : 1.0,
     'LAMBDA_OBJECT':  5.0,
@@ -767,8 +767,8 @@ train_batch_generator = SimpleBatchGenerator(train_image, generator_config, shuf
 
 ### Choose Model Architecture, Optimizer, & Compile with Custom Loss
 ###############################################################################
-yolo_model = yolo_noskip_convnet()
-optimizer = Adam()
+yolo_model = yolo_v2_convnet()
+optimizer = Adam(lr=0.5e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
 
 
@@ -795,10 +795,10 @@ yolo_model.summary()
 
 ### Early Stopping Callbacks
 ###############################################################################
-early_stop = keras.callbacks.EarlyStopping(monitor='loss',  min_delta = 0.001, patience = 3,  mode='min',  verbose=1)
+early_stop = keras.callbacks.EarlyStopping(monitor='loss',  min_delta = 0.001, patience = 1,  mode='min',  verbose=1)
 
 checkpoint = keras.callbacks.ModelCheckpoint(f'{model_save_path}{model_save_name}', 
-                             monitor='val_loss', 
+                             monitor='loss', 
                              verbose=1, 
                              save_best_only=True, 
                              mode='min')
@@ -821,9 +821,9 @@ tf.config.run_functions_eagerly(True)
 # Fit
 yolo_model.fit(train_batch_generator, 
                steps_per_epoch  = len(train_batch_generator),
-               epochs = 1, 
+               epochs = 50, 
                verbose = 1,
-               callbacks = [early_stop, checkpoint, lr_schedule])
+               callbacks = [early_stop, checkpoint])
 
 
 
@@ -836,6 +836,7 @@ yolo_model.fit(train_batch_generator,
 
         
 """
+
 random_image_name = random.choice(os.listdir('C:/local_images/'))
 img_reader = ImageReader()
 test_image = img_reader.fit(f'C:/local_images/{random_image_name}')
@@ -863,7 +864,6 @@ plot_image_bounding_box(test_image[0], final_boxes, generator_config['LABELS'])
         
         
         
-
 
 
 
