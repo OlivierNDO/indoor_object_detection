@@ -901,18 +901,12 @@ model.fit(train_batch_generator,
 ### Make Prediction
 ###############################################################################
 
-
-
-
-        
-"""
-
 random_image_name = random.choice(os.listdir('C:/local_images/'))
 img_reader = ImageReader()
 test_image = img_reader.fit(f'C:/local_images/{random_image_name}')
 test_image = np.expand_dims(test_image, 0)
 dummy_array = np.zeros((1, 1, 1, 1, generator_config['TRUE_BOX_BUFFER'], 4))
-test_pred = yolo_model.predict([test_image, dummy_array])
+test_pred = model.predict([test_image, dummy_array])
 
 
 
@@ -921,10 +915,10 @@ output_rescaler = OutputRescaler()
 netout_scale = output_rescaler.fit(netout)
 
 
-obj_threshold = 0.04
+obj_threshold = 0.1
 boxes = find_high_class_probability_bbox(netout_scale,obj_threshold)
     
-iou_threshold = 0.01
+iou_threshold = 0.3
 final_boxes = nonmax_suppression(boxes, iou_threshold = iou_threshold, obj_threshold = obj_threshold)
 print("{} final number of boxes".format(len(final_boxes)))
 
@@ -932,6 +926,16 @@ print("{} final number of boxes".format(len(final_boxes)))
 
 plot_image_bounding_box(test_image[0], final_boxes, generator_config['LABELS'])      
         
+
+
+
+[b.get_score() for b in boxes]
+
+
+        
+"""
+
+
         
         
 
