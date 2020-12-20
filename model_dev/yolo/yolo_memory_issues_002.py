@@ -20,6 +20,7 @@ from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.callbacks import LearningRateScheduler, ReduceLROnPlateau
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import Sequence
+import sklearn
 from skimage.transform import resize
 import tensorflow as tf
 import tqdm
@@ -771,8 +772,14 @@ with open(f'{dict_write_folder}{dict_list_save_name}', 'rb') as fp:
 
 ### Create Generator
 ###############################################################################
+    
+    
+train_image, valid_image = sklearn.model_selection.train_test_split(train_image, test_size = 0.3)
+    
+    
 keras.backend.clear_session()
 train_batch_generator = SimpleBatchGenerator(train_image, generator_config, shuffle=True)
+valid_batch_generator = SimpleBatchGenerator(valid_image, generator_config, shuffle=True)
 
 
 
@@ -816,19 +823,7 @@ for i in range(1, nb_conv+1):
         conv_layer.set_weights([kernel])
 
 
-
-
-
-
-
-
-
-
-
-
 optimizer = Adam(lr=0.000005)
-
-
 
 loss_yolo = lf.YoloLoss(generator_config['ANCHORS'], (generator_config['GRID_W'], generator_config['GRID_H']),
                         generator_config['BATCH_SIZE'],
@@ -853,22 +848,12 @@ model.summary()
 
 
 
-
-
-
-
-
-
-
-
-
-
 ### Early Stopping Callbacks
 ###############################################################################
-early_stop = keras.callbacks.EarlyStopping(monitor='loss',  min_delta = 0.001, patience = 1,  mode='min',  verbose=1)
+early_stop = keras.callbacks.EarlyStopping(monitor='val_loss',  min_delta = 0.001, patience = 1,  mode='min',  verbose=1)
 
 checkpoint = keras.callbacks.ModelCheckpoint(f'{model_save_path}{model_save_name}', 
-                             monitor='loss', 
+                             monitor='val_loss', 
                              verbose=1, 
                              save_best_only=True, 
                              mode='min')
@@ -888,12 +873,19 @@ lr_schedule = m.CyclicalRateSchedule(min_lr = 0.0000125,
 # Must Be Run with Eager Execution
 tf.config.run_functions_eagerly(True)
 
+# Calculate Training Steps
+tsteps = len(train_batch_generator) // generator_config['BATCH_SIZE']
+vsteps = len(valid_batch_generator) // generator_config['BATCH_SIZE']
+
+
 # Fit
-model.fit(train_batch_generator, 
-               steps_per_epoch  = len(train_batch_generator),
-               epochs = 50, 
-               verbose = 1,
-               callbacks = [early_stop, checkpoint])
+model.fit(train_batch_generator,
+          validation_data = valid_batch_generator,
+          steps_per_epoch = len(train_batch_generator),
+          validation_steps = len(valid_batch_generator),
+          epochs = 50, 
+          verbose = 1,
+          callbacks = [early_stop, checkpoint])
 
 
 
