@@ -53,21 +53,27 @@ from src import modeling as m
 ### Data Processing: Read Whole Images and Boundign Boxes
 ###############################################################################
 # Television
-tv_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Television', max_images = 1000)
+tv_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Television', max_images = 3000)
 tv_img_id_list, tv_coord_list, tv_img_arr = tv_image_retriever.get_whole_images_and_bbox()
 
 # Couch
-couch_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Couch', max_images = 1000)
+couch_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Couch', max_images = 3000)
 couch_img_id_list, couch_coord_list, couch_img_arr = couch_image_retriever.get_whole_images_and_bbox()
 
 
 # Coffee Table
-ct_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Coffee table', max_images = 1000)
+ct_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Coffee table', max_images = 3000)
 ct_img_id_list, ct_coord_list, ct_img_arr = ct_image_retriever.get_whole_images_and_bbox()
 
 # Piana
-piano_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Piano', max_images = 1000)
+piano_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Piano', max_images = 3000)
 piano_img_id_list, piano_coord_list, piano_img_arr = piano_image_retriever.get_whole_images_and_bbox()
+
+
+# Bed
+bed_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Bed', max_images = 3000)
+bed_img_id_list, bed_coord_list, bed_img_arr = bed_image_retriever.get_whole_images_and_bbox()
+
 
 
 
@@ -81,17 +87,20 @@ piano_img_id_list, piano_coord_list, piano_img_arr = piano_image_retriever.get_w
 image_id_list_dict = {'Television' : tv_img_id_list,
                       'Couch' : couch_img_id_list,
                       'Coffee table' : ct_img_id_list,
-                      'Piano' : piano_img_id_list}
+                      'Piano' : piano_img_id_list,
+                      'Bed' : bed_img_id_list}
 
 coord_list_dict = {'Television' : tv_coord_list,
                    'Couch' : couch_coord_list,
                    'Coffee table' : ct_coord_list,
-                   'Piano' : piano_coord_list}
+                   'Piano' : piano_coord_list,
+                   'Bed' : bed_coord_list}
 
 img_array_dict = {'Television' : tv_img_arr,
                    'Couch' : couch_img_arr,
                    'Coffee table' : ct_img_arr,
-                   'Piano' : piano_img_arr}
+                   'Piano' : piano_img_arr,
+                   'Bed' : bed_img_arr}
 
 # Folders to Save Objects
 img_write_folder = 'D:/iod_yolo_data/train/'
