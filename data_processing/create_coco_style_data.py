@@ -151,7 +151,7 @@ with open('D:/iod_yolo_data/pascal_format/object_dict_list.pkl', 'wb') as f:
     
     
 # How to read list   
-with open(f'{dict_write_folder}{dict_list_save_name}.txt', 'rb') as fp:
+with open('D:/iod_yolo_data/pascal_format/object_dict_list.pkl', 'rb') as fp:
     use_dict = pickle.load(fp)   
     
     
