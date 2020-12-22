@@ -588,6 +588,11 @@ class OpenCVCroppedImageRetriever:
         mf.print_timestamp_message(f'Writing file with numpy array: {class_folder_loc}img_arr.pkl')
         with open(f'{class_folder_loc}img_arr.pkl', 'wb') as f:
             pickle.dump(np.array(img_list), f, protocol = 4)
+        
+        # Remove items from memory
+        del img_list; del coord_list; del img_id_list;
+            
+            
                 
     def load_whole_images_and_bbox(self):
         class_folder_loc = f'{self.save_loc}{self.class_name}/'
