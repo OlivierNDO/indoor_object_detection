@@ -73,7 +73,8 @@ generator_config = {
     'LAMBDA_NO_OBJECT' : 1.0,
     'LAMBDA_OBJECT':  5.0,
     'LAMBDA_COORD' : 1.0,
-    'LAMBDA_CLASS' : 1.0
+    'LAMBDA_CLASS' : 1.0,
+    'L2' : 0.00001
 }
 
 
@@ -428,13 +429,13 @@ class WeightReader:
 
 ### Define Model Architecture
 ###############################################################################
-def conv_batchnorm_leaky_layer(x, neurons, kernel = (3,3), strides = (1,1),
+def conv_batchnorm_leaky_layer(x, neurons, kernel = (3,3), strides = (1,1), l2_reg = generator_config['L2'],
                                padding = 'same', use_bias = False, use_maxpooling = False, pool_size = (2,2),
                                conv_name = None, norm_name = None):
     if conv_name is None:
-        xx = Conv2D(neurons, kernel, strides = strides, padding = padding, use_bias=False)(x)
+        xx = Conv2D(neurons, kernel, strides = strides, padding = padding, use_bias = False, kernel_regularizer = l2(l2_reg))(x)
     else:
-        xx = Conv2D(neurons, kernel, strides = strides, padding = padding, use_bias=False, name = conv_name)(x)
+        xx = Conv2D(neurons, kernel, strides = strides, padding = padding, use_bias = False, name = conv_name)(x)
     if norm_name is None:
         xx = BatchNormalization()(xx)
     else:
@@ -863,7 +864,7 @@ loss_yolo = lf.YoloLoss(generator_config['ANCHORS'], (generator_config['GRID_W']
                         lambda_obj=5.0,
                         lambda_class=1.0)
 
-model.compile(loss = loss_yolo, optimizer = Adam())
+model.compile(loss = loss_yolo, optimizer = Adam(beta_1 = 0.9, beta_2 = 0.999, epsilon = 1e-08, decay = 0.0))
 model.summary()
 
 

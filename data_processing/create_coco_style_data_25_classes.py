@@ -53,80 +53,79 @@ from src import modeling as m
 ### Data Processing: Read Whole Images and Boundign Boxes
 ###############################################################################
 
-
-table_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Table', max_images = 5000)
+table_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Table', max_images = 5000, resize_height = 416, resize_width = 416)
 table_img_id_list, table_coord_list, table_img_arr = table_image_retriever.get_whole_images_and_bbox()
 
-chair_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Chair', max_images = 5000)
+chair_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Chair', max_images = 5000, resize_height = 416, resize_width = 416)
 chair_img_id_list, chair_coord_list, chair_img_arr = chair_image_retriever.get_whole_images_and_bbox()
 
-sculpture_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Sculpture', max_images = 5000)
+sculpture_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Sculpture', max_images = 5000, resize_height = 416, resize_width = 416)
 sculpture_img_id_list, sculpture_coord_list, sculpture_img_arr = sculpture_image_retriever.get_whole_images_and_bbox()
 
-laptop_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Laptop', max_images = 5000)
+laptop_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Laptop', max_images = 5000, resize_height = 416, resize_width = 416)
 laptop_img_id_list, laptop_coord_list, laptop_img_arr = laptop_image_retriever.get_whole_images_and_bbox()
 
-desk_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Desk', max_images = 5000)
+desk_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Desk', max_images = 5000, resize_height = 416, resize_width = 416)
 desk_img_id_list, desk_coord_list, desk_img_arr = desk_image_retriever.get_whole_images_and_bbox()
 
-houseplant_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Houseplant', max_images = 5000)
+houseplant_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Houseplant', max_images = 5000, resize_height = 416, resize_width = 416)
 houseplant_img_id_list, houseplant_coord_list, houseplant_img_arr = houseplant_image_retriever.get_whole_images_and_bbox()
 
-shelf_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Shelf', max_images = 5000)
+shelf_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Shelf', max_images = 5000, resize_height = 416, resize_width = 416)
 shelf_img_id_list, shelf_coord_list, shelf_img_arr = shelf_image_retriever.get_whole_images_and_bbox()
 
-couch_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Couch', max_images = 5000)
+couch_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Couch', max_images = 5000, resize_height = 416, resize_width = 416)
 couch_img_id_list, couch_coord_list, couch_img_arr = couch_image_retriever.get_whole_images_and_bbox()
 
-stairs_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Stairs', max_images = 5000)
+stairs_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Stairs', max_images = 5000, resize_height = 416, resize_width = 416)
 stairs_img_id_list, stairs_coord_list, stairs_img_arr = stairs_image_retriever.get_whole_images_and_bbox()
 
-vase_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Vase', max_images = 5000)
+vase_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Vase', max_images = 5000, resize_height = 416, resize_width = 416)
 vase_img_id_list, vase_coord_list, vase_img_arr = vase_image_retriever.get_whole_images_and_bbox()
 
-bench_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Bench', max_images = 5000)
+bench_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Bench', max_images = 5000, resize_height = 416, resize_width = 416)
 bench_img_id_list, bench_coord_list, bench_img_arr = bench_image_retriever.get_whole_images_and_bbox()
 
-computer_monitor_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Computer monitor', max_images = 5000)
+computer_monitor_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Computer monitor', max_images = 5000, resize_height = 416, resize_width = 416)
 computer_monitor_img_id_list, computer_monitor_coord_list, computer_monitor_img_arr = computer_monitor_image_retriever.get_whole_images_and_bbox()
 
-computer_keyboard_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Computer keyboard', max_images = 5000)
+computer_keyboard_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Computer keyboard', max_images = 5000, resize_height = 416, resize_width = 416)
 computer_keyboard_img_id_list, computer_keyboard_coord_list, computer_keyboard_img_arr = computer_keyboard_image_retriever.get_whole_images_and_bbox()
 
-sink_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Sink', max_images = 5000)
+sink_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Sink', max_images = 5000, resize_height = 416, resize_width = 416)
 sink_img_id_list, sink_coord_list, sink_img_arr = sink_image_retriever.get_whole_images_and_bbox()
 
-bed_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Bed', max_images = 5000)
+bed_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Bed', max_images = 5000, resize_height = 416, resize_width = 416)
 bed_img_id_list, bed_coord_list, bed_img_arr = bed_image_retriever.get_whole_images_and_bbox()
 
-cabinetry_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Cabinetry', max_images = 5000)
+cabinetry_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Cabinetry', max_images = 5000, resize_height = 416, resize_width = 416)
 cabinetry_img_id_list, cabinetry_coord_list, cabinetry_img_arr = cabinetry_image_retriever.get_whole_images_and_bbox()
 
-television_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Television', max_images = 5000)
+television_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Television', max_images = 5000, resize_height = 416, resize_width = 416)
 television_img_id_list, television_coord_list, television_img_arr = television_image_retriever.get_whole_images_and_bbox()
 
-curtain_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Curtain', max_images = 5000)
+curtain_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Curtain', max_images = 5000, resize_height = 416, resize_width = 416)
 curtain_img_id_list, curtain_coord_list, curtain_img_arr = curtain_image_retriever.get_whole_images_and_bbox()
 
-piano_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Piano', max_images = 5000)
+piano_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Piano', max_images = 5000, resize_height = 416, resize_width = 416)
 piano_img_id_list, piano_coord_list, piano_img_arr = piano_image_retriever.get_whole_images_and_bbox()
 
-mirror_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Mirror', max_images = 5000)
+mirror_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Mirror', max_images = 5000, resize_height = 416, resize_width = 416)
 mirror_img_id_list, mirror_coord_list, mirror_img_arr = mirror_image_retriever.get_whole_images_and_bbox()
 
-countertop_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Countertop', max_images = 5000)
+countertop_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Countertop', max_images = 5000, resize_height = 416, resize_width = 416)
 countertop_img_id_list, countertop_coord_list, countertop_img_arr = countertop_image_retriever.get_whole_images_and_bbox()
 
-drawer_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Drawer', max_images = 5000)
+drawer_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Drawer', max_images = 5000, resize_height = 416, resize_width = 416)
 drawer_img_id_list, drawer_coord_list, drawer_img_arr = drawer_image_retriever.get_whole_images_and_bbox()
 
-lamp_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Lamp', max_images = 5000)
+lamp_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Lamp', max_images = 5000, resize_height = 416, resize_width = 416)
 lamp_img_id_list, lamp_coord_list, lamp_img_arr = lamp_image_retriever.get_whole_images_and_bbox()
 
-fireplace_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Fireplace', max_images = 5000)
+fireplace_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Fireplace', max_images = 5000, resize_height = 416, resize_width = 416)
 fireplace_img_id_list, fireplace_coord_list, fireplace_img_arr = fireplace_image_retriever.get_whole_images_and_bbox()
 
-chest_of_drawers_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Chest of drawers', max_images = 5000)
+chest_of_drawers_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Chest of drawers', max_images = 5000, resize_height = 416, resize_width = 416)
 chest_of_drawers_img_id_list, chest_of_drawers_coord_list, chest_of_drawers_img_arr = chest_of_drawers_image_retriever.get_whole_images_and_bbox()
 
 
