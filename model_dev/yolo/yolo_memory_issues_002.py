@@ -65,8 +65,8 @@ generator_config = {
     'GRID_H' : 13,  
     'GRID_W' : 13,
     'BOX' : 5,
-    'LABELS' : ['Television', 'Couch', 'Coffee table', 'Piano'],
-    'CLASS' : len(['Television', 'Couch', 'Coffee table', 'Piano']),
+    'LABELS' : ['Television', 'Couch', 'Coffee table', 'Piano', 'Bed'],
+    'CLASS' : len(['Television', 'Couch', 'Coffee table', 'Piano', 'Bed']),
     'ANCHORS' : [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
     'BATCH_SIZE' : 4,
     'TRUE_BOX_BUFFER' : 50,
@@ -235,7 +235,47 @@ def rescale_centerwh(obj, config = generator_config):
     center_w = (obj['xmax'] - obj['xmin']) / (float(config['IMAGE_W']) / config['GRID_W']) 
     center_h = (obj['ymax'] - obj['ymin']) / (float(config['IMAGE_H']) / config['GRID_H']) 
     return(center_w, center_h)
-
+    
+    
+class ImageAugmenter:
+    def __init__(self,
+                 img,
+                 distort_freq = 4,
+                 coord_missing_freq = 7,
+                 coord_missing_chunks = 10,
+                 chunk_size = 40,
+                 rotate_freq = 6,
+                 rotation_range = 10):
+        self.img = img
+        self.distort_freq = distort_freq
+        self.coord_missing_freq = coord_missing_freq
+        self.coord_missing_chunks = coord_missing_chunks
+        self.chunk_size = chunk_size
+        self.rotate_freq = rotate_freq 
+        self.rotation_range = rotation_range
+        
+    def random_flip(self, x):
+        random_integer = random.choice([0,1,2,3])
+        flip_dict = {0 : x,
+                     1 : np.fliplr(x),
+                     2 : np.flipud(x),
+                     3 : np.fliplr(np.flipud(x))}
+        return flip_dict.get(random_integer)
+    
+    def augmentation_pipe(self):
+        img_i = self.random_flip(self.img)
+        random_integer = random.choice(range(100))
+        if random_integer % self.distort_freq == 0:
+            img_i = m.color_distort_arr(img_i)
+        if  random_integer % self.coord_missing_freq == 0:
+            img_i = m.rand_coords_missing(img_i,
+                                        n_chunks = self.coord_missing_chunks,
+                                        chunk_size = self.chunk_size)
+        if random_integer % self.rotate_freq == 0:
+            img_i = m.rotate_arr(img_i, max_angle = self.rotation_range, min_angle = self.rotation_range * -1)
+        return img_i
+           
+           
 
 class SimpleBatchGenerator(Sequence):
     def __init__(self, images, config = generator_config, shuffle = True):
@@ -321,7 +361,8 @@ class SimpleBatchGenerator(Sequence):
         for train_instance in self.images[l_bound:r_bound]:
             # augment input image and fix object's position and size
             img, all_objs = self.imageReader.fit(train_instance)
-            
+            img = ImageAugmenter(img).augmentation_pipe()
+
             # construct output from object's x, y, w, h
             true_box_index = 0
             
@@ -362,6 +403,8 @@ class SimpleBatchGenerator(Sequence):
             np.random.shuffle(self.images)
 
 
+
+
 def space_to_depth_x2(x):
     """
     Function to implement the orgnization layer (thanks to github.com/allanzelener/YAD2K)
@@ -381,13 +424,6 @@ class WeightReader:
     
     def reset(self):
         self.offset = 4
-
-
-
-
-    
-    
-    
 
 
 ### Define Model Architecture
@@ -775,13 +811,10 @@ with open(f'{dict_write_folder}{dict_list_save_name}', 'rb') as fp:
     
     
 train_image, valid_image = sklearn.model_selection.train_test_split(train_image, test_size = 0.3)
-    
-    
+
 keras.backend.clear_session()
 train_batch_generator = SimpleBatchGenerator(train_image, generator_config, shuffle=True)
 valid_batch_generator = SimpleBatchGenerator(valid_image, generator_config, shuffle=True)
-
-
 
 ### Choose Model Architecture, Optimizer, & Compile with Custom Loss
 ###############################################################################
@@ -823,8 +856,6 @@ for i in range(1, nb_conv+1):
         conv_layer.set_weights([kernel])
 
 
-optimizer = Adam(lr=0.000005)
-
 loss_yolo = lf.YoloLoss(generator_config['ANCHORS'], (generator_config['GRID_W'], generator_config['GRID_H']),
                         generator_config['BATCH_SIZE'],
                         lambda_coord=1.0,
@@ -832,25 +863,14 @@ loss_yolo = lf.YoloLoss(generator_config['ANCHORS'], (generator_config['GRID_W']
                         lambda_obj=5.0,
                         lambda_class=1.0)
 
-
-
-#yolo_model.compile(loss = YoloLoss(), optimizer = optimizer)
-
-model.compile(loss = loss_yolo, optimizer = optimizer)
-
-# If we run this (even though it's wrong), we don't run out of memory
-# yolo_model.compile(loss = 'categorical_crossentropy', optimizer = optimizer)
-
-
+model.compile(loss = loss_yolo, optimizer = Adam())
 model.summary()
-
-
 
 
 
 ### Early Stopping Callbacks
 ###############################################################################
-early_stop = keras.callbacks.EarlyStopping(monitor='val_loss',  min_delta = 0.001, patience = 1,  mode='min',  verbose=1)
+early_stop = keras.callbacks.EarlyStopping(monitor='val_loss',  min_delta = 0.001, patience = 15,  mode='min',  verbose=1)
 
 checkpoint = keras.callbacks.ModelCheckpoint(f'{model_save_path}{model_save_name}', 
                              monitor='val_loss', 
@@ -858,14 +878,16 @@ checkpoint = keras.callbacks.ModelCheckpoint(f'{model_save_path}{model_save_name
                              save_best_only=True, 
                              mode='min')
 
-lr_schedule = m.CyclicalRateSchedule(min_lr = 0.0000125,
+lr_schedule = m.CyclicalRateSchedule(min_lr = 0.00001,
                                      max_lr = 0.00015,
-                                     n_epochs = 10,
+                                     n_epochs = 200,
                                      warmup_epochs = 5,
                                      cooldown_epochs = 1,
                                      cycle_length = 10,
                                      logarithmic = True,
                                      decrease_factor = 0.9)
+
+lr_schedule.plot_cycle()
 
 
 ### Fit Model
@@ -883,15 +905,29 @@ model.fit(train_batch_generator,
           validation_data = valid_batch_generator,
           steps_per_epoch = len(train_batch_generator),
           validation_steps = len(valid_batch_generator),
-          epochs = 50, 
+          epochs = 500, 
           verbose = 1,
-          callbacks = [early_stop, checkpoint])
+          callbacks = [early_stop, checkpoint, lr_schedule.lr_scheduler()])
 
 
 
 
 ### Make Prediction
 ###############################################################################
+
+
+
+
+
+
+
+
+
+
+
+        
+"""
+
 
 random_image_name = random.choice(os.listdir('C:/local_images/'))
 img_reader = ImageReader()
@@ -907,10 +943,10 @@ output_rescaler = OutputRescaler()
 netout_scale = output_rescaler.fit(netout)
 
 
-obj_threshold = 0.1
+obj_threshold = 0.15
 boxes = find_high_class_probability_bbox(netout_scale,obj_threshold)
     
-iou_threshold = 0.3
+iou_threshold = 0.7
 final_boxes = nonmax_suppression(boxes, iou_threshold = iou_threshold, obj_threshold = obj_threshold)
 print("{} final number of boxes".format(len(final_boxes)))
 
@@ -920,16 +956,7 @@ plot_image_bounding_box(test_image[0], final_boxes, generator_config['LABELS'])
         
 
 
-
-[b.get_score() for b in boxes]
-
-
-        
-"""
-
-
-        
-        
+ 
 
 
 
