@@ -15,6 +15,7 @@ import numpy as np
 import os
 import pandas as pd
 from PIL import Image
+import pickle
 import requests
 import tempfile
 from tensorflow.keras.preprocessing.image import load_img
@@ -511,6 +512,7 @@ class OpenCVCroppedImageRetriever:
     
     def __init__(self, 
                  class_name,
+                 save_loc = None,
                  local_gcs_json_path = f'{cdp.config_gcs_auth_json_path}',
                  image_id_col = 'ImageID',
                  bucket_name = f'{cdp.config_source_bucket_name}',
@@ -522,6 +524,7 @@ class OpenCVCroppedImageRetriever:
                  ):
         # Initialize Arguments
         self.class_name = class_name
+        self.save_loc = save_loc
         self.local_gcs_json_path = local_gcs_json_path
         self.image_id_col = image_id_col
         self.local_gcs_json_path = local_gcs_json_path
@@ -535,6 +538,69 @@ class OpenCVCroppedImageRetriever:
         # Reference Google Cloud Authentication Document
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = self.local_gcs_json_path
         
+    
+    def save_whole_images_and_bbox(self):
+        # Retrieve Class Metadata
+        image_retriever = OpenCVImageClassRetriever(class_name = self.class_name)
+        bbox_df = image_retriever.get_bounding_box_df()
+        desc_df = image_retriever.get_class_desc_df()
+        
+        # Image IDs
+        unique_img_ids = list(np.unique(bbox_df[self.image_id_col].values.tolist()))
+        if self.max_images is not None:
+            unique_img_ids = unique_img_ids[:self.max_images]
+        
+        # Read and Crop Images with Bounding Boxes
+        img_id_list = []
+        img_list = []
+        coord_list = []
+        for img_id in tqdm.tqdm(unique_img_ids):
+            try:
+                # Subset Info Dataframes for Image ID
+                bbox_df_i = bbox_df[bbox_df.ImageID == img_id]
+                desc_df_i = desc_df[desc_df.ImageID == img_id]
+                
+                # Read Image
+                img_i = read_url_image(desc_df_i['OriginalURL'].values[0])
+            
+                # Extract Cropped Objects
+                bbox_coords = bbox_df_i[['XMin', 'XMax', 'YMin', 'YMax']].values.tolist()
+                for bbc in bbox_coords:
+                    xmin, xmax, ymin, ymax = bbc
+                    img_resized = resize(img_i, (self.resize_width, self.resize_height))
+                    correct_shape = (self.resize_width, self.resize_height, 3)
+                    if (not is_blank_img(img_resized) and img_resized.shape == correct_shape):
+                        img_list.append(img_resized)
+                        coord_list.append(bbc)
+                        img_id_list.append(img_id)
+            except:
+                pass
+            
+        # Save Items
+        class_folder_loc = f'{self.save_loc}{self.class_name}/'
+        mf.create_folder_if_not_existing(class_folder_loc)
+        mf.print_timestamp_message(f'Writing file with image IDs: {class_folder_loc}img_id_list.pkl')
+        with open(f'{class_folder_loc}img_id_list.pkl', 'wb') as f:
+            pickle.dump(img_id_list, f)
+        mf.print_timestamp_message(f'Writing file with coordinates: {class_folder_loc}coord_list.pkl')
+        with open(f'{class_folder_loc}coord_list.pkl', 'wb') as f:
+            pickle.dump(coord_list, f)
+        mf.print_timestamp_message(f'Writing file with numpy array: {class_folder_loc}img_arr.pkl')
+        with open(f'{class_folder_loc}img_arr.pkl', 'wb') as f:
+            pickle.dump(np.array(img_list), f)
+                
+    def load_whole_images_and_bbox(self):
+        class_folder_loc = f'{self.save_loc}{self.class_name}/'
+        with open(f'{class_folder_loc}img_id_list.pkl', 'rb') as f:
+            img_id_list = pickle.load(f)
+            
+        with open(f'{class_folder_loc}coord_list.pkl', 'rb') as f:
+            coord_list = pickle.load(f)
+            
+        with open(f'{class_folder_loc}img_arr.pkl', 'rb') as f:
+            img_arr = pickle.load(f)
+        
+        return img_id_list, coord_list, img_arr
         
     def get_whole_images_and_bbox(self):
         # Retrieve Class Metadata
