@@ -581,13 +581,13 @@ class OpenCVCroppedImageRetriever:
         mf.create_folder_if_not_existing(class_folder_loc)
         mf.print_timestamp_message(f'Writing file with image IDs: {class_folder_loc}img_id_list.pkl')
         with open(f'{class_folder_loc}img_id_list.pkl', 'wb') as f:
-            pickle.dump(img_id_list, f)
+            pickle.dump(img_id_list, f, protocol = 4)
         mf.print_timestamp_message(f'Writing file with coordinates: {class_folder_loc}coord_list.pkl')
         with open(f'{class_folder_loc}coord_list.pkl', 'wb') as f:
-            pickle.dump(coord_list, f)
+            pickle.dump(coord_list, f, protocol = 4)
         mf.print_timestamp_message(f'Writing file with numpy array: {class_folder_loc}img_arr.pkl')
         with open(f'{class_folder_loc}img_arr.pkl', 'wb') as f:
-            pickle.dump(np.array(img_list), f)
+            pickle.dump(np.array(img_list), f, protocol = 4)
                 
     def load_whole_images_and_bbox(self):
         class_folder_loc = f'{self.save_loc}{self.class_name}/'
