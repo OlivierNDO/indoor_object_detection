@@ -53,7 +53,7 @@ from src import modeling as m
 ### Data Processing: Read Whole Images and Boundign Boxes
 ###############################################################################
 
-table_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Table', max_images = 5000, resize_height = 416, resize_width = 416)
+table_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Kitchen & dining room table', max_images = 5000)
 table_img_id_list, table_coord_list, table_img_arr = table_image_retriever.get_whole_images_and_bbox()
 
 chair_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Chair', max_images = 5000, resize_height = 416, resize_width = 416)
@@ -135,7 +135,7 @@ chest_of_drawers_img_id_list, chest_of_drawers_coord_list, chest_of_drawers_img_
 
 
 # Dictionaries with Objects to Reformat and Save
-image_id_list_dict = {'Table' : table_img_id_list, 
+image_id_list_dict = {'Kitchen & dining room table' : table_img_id_list, 
                       'Chair' : chair_img_id_list, 
                       'Sculpture' : sculpture_img_id_list, 
                       'Laptop' : laptop_img_id_list, 
@@ -161,7 +161,7 @@ image_id_list_dict = {'Table' : table_img_id_list,
                       'Fireplace' : fireplace_img_id_list, 
                       'Chest of drawers' : chest_of_drawers_img_id_list}
 
-coord_list_dict = {'Table' : table_coord_list, 
+coord_list_dict = {'Kitchen & dining room table' : table_coord_list, 
                    'Chair' : chair_coord_list, 
                    'Sculpture' : sculpture_coord_list, 
                    'Laptop' : laptop_coord_list, 
@@ -187,7 +187,7 @@ coord_list_dict = {'Table' : table_coord_list,
                    'Fireplace' : fireplace_coord_list, 
                    'Chest of drawers' : chest_of_drawers_coord_list}
 
-img_array_dict = {'Table' : table_img_arr, 
+img_array_dict = {'Kitchen & dining room table' : table_img_arr, 
                   'Chair' : chair_img_arr, 
                   'Sculpture' : sculpture_img_arr, 
                   'Laptop' : laptop_img_arr, 

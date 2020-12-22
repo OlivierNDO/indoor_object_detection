@@ -74,7 +74,7 @@ generator_config = {
     'LAMBDA_OBJECT':  5.0,
     'LAMBDA_COORD' : 1.0,
     'LAMBDA_CLASS' : 1.0,
-    'L2' : 0.00001
+    'L2' : 0.0
 }
 
 
@@ -944,7 +944,7 @@ output_rescaler = OutputRescaler()
 netout_scale = output_rescaler.fit(netout)
 
 
-obj_threshold = 0.15
+obj_threshold = 0.001
 boxes = find_high_class_probability_bbox(netout_scale,obj_threshold)
     
 iou_threshold = 0.7
