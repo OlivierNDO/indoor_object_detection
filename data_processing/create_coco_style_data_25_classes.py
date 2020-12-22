@@ -55,82 +55,82 @@ intmd_save_loc = 'D:/iod_25_class_intmd_save/'
 
 ### Data Processing: Read Whole Images and Boundign Boxes
 ###############################################################################
-
 # Read and Save
-table_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Kitchen & dining room table', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+table_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Kitchen & dining room table', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 table_image_retriever.save_whole_images_and_bbox()
 
-chair_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Chair', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+chair_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Chair', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 chair_image_retriever.save_whole_images_and_bbox()
 
-sculpture_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Sculpture', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+sculpture_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Sculpture', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 sculpture_image_retriever.save_whole_images_and_bbox()
 
-laptop_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Laptop', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+laptop_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Laptop', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 laptop_image_retriever.save_whole_images_and_bbox()
 
-desk_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Desk', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+desk_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Desk', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 desk_image_retriever.save_whole_images_and_bbox()
 
-houseplant_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Houseplant', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+houseplant_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Houseplant', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 houseplant_image_retriever.save_whole_images_and_bbox()
 
-shelf_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Shelf', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+shelf_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Shelf', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 shelf_image_retriever.save_whole_images_and_bbox()
 
-couch_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Couch', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+couch_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Couch', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 couch_image_retriever.save_whole_images_and_bbox()
 
-stairs_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Stairs', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+stairs_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Stairs', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 stairs_image_retriever.save_whole_images_and_bbox()
 
-vase_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Vase', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+vase_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Vase', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 vase_image_retriever.save_whole_images_and_bbox()
 
-bench_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Bench', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+bench_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Bench', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 bench_image_retriever.save_whole_images_and_bbox()
 
-computer_monitor_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Computer monitor', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+computer_monitor_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Computer monitor', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 computer_monitor_image_retriever.save_whole_images_and_bbox()
 
-computer_keyboard_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Computer keyboard', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+computer_keyboard_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Computer keyboard', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 computer_keyboard_image_retriever.save_whole_images_and_bbox()
 
-sink_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Sink', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+sink_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Sink', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 sink_image_retriever.save_whole_images_and_bbox()
 
-bed_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Bed', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+bed_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Bed', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 bed_image_retriever.save_whole_images_and_bbox()
 
-cabinetry_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Cabinetry', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+cabinetry_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Cabinetry', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 cabinetry_image_retriever.save_whole_images_and_bbox()
 
-television_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Television', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+television_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Television', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 television_image_retriever.save_whole_images_and_bbox()
 
-curtain_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Curtain', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+curtain_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Curtain', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 curtain_image_retriever.save_whole_images_and_bbox()
 
-piano_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Piano', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
-piano_img_id_list, piano_coord_list, piano_img_arr = piano_image_retriever.save_whole_images_and_bbox()
+piano_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Piano', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+piano_image_retriever.save_whole_images_and_bbox()
 
-mirror_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Mirror', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+mirror_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Mirror', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 mirror_image_retriever.save_whole_images_and_bbox()
 
-countertop_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Countertop', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+countertop_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Countertop', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 countertop_image_retriever.save_whole_images_and_bbox()
 
-drawer_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Drawer', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+drawer_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Drawer', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 drawer_image_retriever.save_whole_images_and_bbox()
 
-lamp_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Lamp', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+lamp_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Lamp', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 lamp_image_retriever.save_whole_images_and_bbox()
 
-fireplace_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Fireplace', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+fireplace_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Fireplace', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 fireplace_image_retriever.save_whole_images_and_bbox()
 
-chest_of_drawers_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Chest of drawers', max_images = 5, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
+chest_of_drawers_image_retriever = imm.OpenCVCroppedImageRetriever(class_name = 'Chest of drawers', max_images = 5000, resize_height = 416, resize_width = 416, save_loc = intmd_save_loc)
 chest_of_drawers_image_retriever.save_whole_images_and_bbox()
+
 
 
 
@@ -163,21 +163,8 @@ chest_of_drawers_img_id_list, chest_of_drawers_coord_list, chest_of_drawers_img_
 
 
 
-
-
-
-
-
-
-
-
-
-
 ### Write Files Using Yolo Formatting
 ###############################################################################
-
-
-
 # Dictionaries with Objects to Reformat and Save
 image_id_list_dict = {'Kitchen & dining room table' : table_img_id_list, 
                       'Chair' : chair_img_id_list, 
