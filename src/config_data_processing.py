@@ -1,11 +1,11 @@
 ### Object Classes to Use in Data Processing
 ###############################################################################
-config_obj_detection_classes = ['Sports equipment', 'Chair', 'Sculpture', 'Laptop', 'Desk', 'Houseplant',
-                                'Shelf', 'Couch', 'Stairs', 'Vase', 'Bench', 'Computer monitor',
-                                'Computer keyboard', 'Sink', 'Bed', 'Cabinetry', 'Coffee table', 
-                                'Television', 'Curtain', 'Piano', 'Mirror', 'Countertop',
-                                'Kitchen & dining room table', 'Drawer', 'Lamp', 'Fireplace',
-                                'Studio couch', 'Chest of drawers', 'Sofa bed']
+config_obj_detection_classes = ['Bed', 'Bench', 'Cabinetry', 'Chair', 'Chest of drawers',
+                                'Computer keyboard', 'Computer monitor', 'Couch',
+                                'Countertop', 'Curtain', 'Desk', 'Drawer',
+                                'Fireplace', 'Houseplant', 'Kitchen & dining room table', 'Lamp',
+                                'Laptop', 'Mirror', 'Piano', 'Sculpture', 'Shelf', 'Sink',
+                                'Stairs', 'Television', 'Vase']
 
 
 ### File Paths ... TO DO: use relative path or shared location for data
