@@ -242,8 +242,6 @@ for i, odc in enumerate(od_classes):
   
 ### Create Dictionary
 ###############################################################################
-
-
 unique_image_ids = list(set(mf.unnest_list_of_lists([list(x.keys()) for x in coord_list_dict.values()])))
 unique_classes = od_classes
 image_dict_list = []
@@ -252,10 +250,8 @@ for uii in tqdm.tqdm(unique_image_ids):
     object_list = []
     for uc in unique_classes:
         if uii in image_id_list_dict.get(uc):
-            #index_pos = [i for i, x in enumerate(image_id_list_dict.get(uc)) if x == uii]
             img_save_name = f'{intmd_save_loc}{uii}.jpeg'
             # Append Coordinates
-            #coords = [coord_list_dict.get(uc)[i] for i in index_pos]
             coords = coord_list_dict.get(uc).get(uii)
             for c in coords:
                 obj_dict = {'name' : uc,
@@ -271,33 +267,14 @@ for uii in tqdm.tqdm(unique_image_ids):
     image_dict_list.append(image_dict)
     
 
-    
 
-
-
-    
-    
 with open(f'{dict_save_loc}{dict_save_name}', 'wb') as f:
     pickle.dump(image_dict_list, f)
     
 
 
-
-resized_image, resized_coords = resize_image_and_bounding_box(image = temp_image, new_size = 416, bounding_box_list = [temp_bbox])
-
-
-plot_image_bounding_box(img_arr = resized_image,
-                        coords = resized_coords,
-                        labels = ['Bench'],
-                            box_color = 'red', text_color = 'red', 
-                            fontsize = 11, linewidth = 1, y_offset = -10)
-
-
-
-    
-image_dict_list
-
-
+"""
+Testing:
 
 
 rand_i = random.choice(range(len(image_dict_list)))
@@ -316,4 +293,4 @@ plot_image_bounding_box(img_arr = temp_image,
                             box_color = 'red', text_color = 'red', 
                             fontsize = 11, linewidth = 1, y_offset = -10)
 
-
+"""
