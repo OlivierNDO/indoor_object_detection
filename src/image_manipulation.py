@@ -641,13 +641,12 @@ class OpenCVCroppedImageRetriever:
                     xmax = int(int(xmax * img_i.shape[1]) * x_scale)                    
                     ymin = int(int(ymin * img_i.shape[0]) * y_scale)
                     ymax = int(int(ymax * img_i.shape[0]) * y_scale)
-                                       
-                    img_size_list.append((img_i.shape[0], img_i.shape[1]))
                     img_resized = resize(img_i, (self.resize_width, self.resize_height))
                     correct_shape = (self.resize_width, self.resize_height, 3)
                     if (not is_blank_img(img_resized) and img_resized.shape == correct_shape):
                         img_list.append(img_resized)
                         coord_list.append([xmin, xmax, ymin, ymax])
+                        img_id_list.append(img_id)
             except:
                 pass
         return img_id_list, coord_list, np.array(img_list)

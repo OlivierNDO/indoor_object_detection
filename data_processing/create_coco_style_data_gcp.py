@@ -60,22 +60,21 @@ dict_save_name = 'object_dict_list.pkl'
 
 image_id_list_dict = {}
 coord_list_dict = {}
-image_size_list_dict = {}
 
-for i, odc in enumerate(cdp.config_obj_detection_classes[:2]):
+
+for i, odc in enumerate(cdp.config_obj_detection_classes):
     mf.print_timestamp_message(f'Starting {odc} class {(i+1)} of {len(cdp.config_obj_detection_classes)}')
     image_retriever = imm.OpenCVCroppedImageRetriever(class_name = odc,
                                                       max_images = 5,
                                                       resize_height = 416,
                                                       resize_width = 416)
-    img_id_list, coord_list, img_arr, img_size_list = image_retriever.get_whole_images_and_bbox()
+    img_id_list, coord_list, img_arr= image_retriever.get_whole_images_and_bbox()
     for i, x in tqdm.tqdm(enumerate(img_id_list)):
         img_save_name = f'{intmd_save_loc}{x}.jpeg'
         im = Image.fromarray((img_arr[i] * 255).astype(np.uint8))
         im.save(img_save_name)
     image_id_list_dict[odc] = img_id_list
     coord_list_dict[odc] = coord_list
-    image_size_list_dict[odc] = img_size_list
     del img_id_list, coord_list, img_arr;
     
     
@@ -108,8 +107,8 @@ for uii in tqdm.tqdm(unique_image_ids):
                 object_list.append(obj_dict)
     image_dict = {'object' : object_list,
                   'filename' : img_save_name,
-                  'width' : cdp.config_resize_width,
-                  'height' : cdp.config_resize_height}
+                  'width' : 416,
+                  'height' : 416}
     image_dict_list.append(image_dict)
     
     
@@ -118,14 +117,15 @@ with open(f'{dict_save_loc}{dict_save_name}', 'wb') as f:
     
     
     
-    
-    
-    
-    
-    
+
+temp = image_dict_list[10]
+
+temp_image = np.asarray(load_img(temp.get('filename')))    
+temp_coords = [temp.get('object')[0].get('xmin'), temp.get('object')[0].get('xmax'),
+               temp.get('object')[0].get('ymin'), temp.get('object')[0].get('ymax')]
 
 
-temp_coords = coord_list_dict.get('Sports equipment')[10]
+plt.imshow(temp_image)
 
 
 def plot_image_bounding_box(img_arr, coords, labels,
@@ -168,7 +168,7 @@ def plot_image_bounding_box(img_arr, coords, labels,
     plt.show()
 
 
-plot_image_bounding_box(img_arr = img_arr[10], coords = [temp_coords], labels = ['label'],
+plot_image_bounding_box(img_arr = temp_image, coords = [temp_coords], labels = ['label'],
                             box_color = 'red', text_color = 'red', 
                             fontsize = 11, linewidth = 1, y_offset = -10)
 
