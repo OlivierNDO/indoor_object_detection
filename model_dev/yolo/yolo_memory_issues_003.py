@@ -857,7 +857,8 @@ for i in range(1, nb_conv+1):
         conv_layer.set_weights([kernel])
 
 
-loss_yolo = lf.YoloLoss(generator_config['ANCHORS'], (generator_config['GRID_W'], generator_config['GRID_H']),
+loss_yolo = lf.YoloLoss(generator_config['ANCHORS'],
+                        (generator_config['GRID_W'], generator_config['GRID_H']),
                         generator_config['BATCH_SIZE'],
                         lambda_coord=1.0,
                         lambda_noobj=1.0,
