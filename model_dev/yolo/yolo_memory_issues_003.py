@@ -65,8 +65,8 @@ generator_config = {
     'GRID_H' : 13,  
     'GRID_W' : 13,
     'BOX' : 5,
-    'LABELS' : ['Television', 'Couch', 'Coffee table', 'Piano', 'Bed'],
-    'CLASS' : len(['Television', 'Couch', 'Coffee table', 'Piano', 'Bed']),
+    'LABELS' : cdp.config_obj_detection_classes,
+    'CLASS' : len(cdp.config_obj_detection_classes),
     'ANCHORS' : [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
     'BATCH_SIZE' : 4,
     'TRUE_BOX_BUFFER' : 50,
@@ -362,7 +362,7 @@ class SimpleBatchGenerator(Sequence):
         for train_instance in self.images[l_bound:r_bound]:
             # augment input image and fix object's position and size
             img, all_objs = self.imageReader.fit(train_instance)
-            img = ImageAugmenter(img).augmentation_pipe()
+            #img = ImageAugmenter(img).augmentation_pipe()
 
             # construct output from object's x, y, w, h
             true_box_index = 0

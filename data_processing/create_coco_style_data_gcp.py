@@ -219,12 +219,12 @@ def plot_image_bounding_box(img_arr, coords, labels,
 ###############################################################################
 image_id_list_dict = {}
 coord_list_dict = {}
-od_classes = cdp.config_obj_detection_classes[0:2]
+od_classes = cdp.config_obj_detection_classes
 
 
 for i, odc in enumerate(od_classes):
     mf.print_timestamp_message(f'Starting {odc} class {(i+1)} of {len(od_classes)}')
-    image_retriever = DetectionImageRetriever(class_name = odc, max_images = 10, resize_height = 416, resize_width = 416)
+    image_retriever = DetectionImageRetriever(class_name = odc, max_images = 5000, resize_height = 416, resize_width = 416)
     img_coord_dict, img_array_dict = image_retriever.get_whole_images_and_bbox()
     img_id_list = list(img_coord_dict.keys())
     image_id_list_dict[odc] = img_id_list
