@@ -68,7 +68,7 @@ generator_config = {
     'LABELS' : cdp.config_obj_detection_classes,
     'CLASS' : len(cdp.config_obj_detection_classes),
     'ANCHORS' : [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
-    'BATCH_SIZE' : 4,
+    'BATCH_SIZE' : 8,
     'TRUE_BOX_BUFFER' : 50,
     'LAMBDA_NO_OBJECT' : 1.0,
     'LAMBDA_OBJECT':  5.0,
@@ -795,7 +795,86 @@ def plot_image_bounding_box(img_arr, boxes, labels = generator_config['LABELS'],
     plt.imshow(img_arr)
     plt.show()
     
+    
+def plot_actual_image_bounding_box(img_arr, coords, labels,
+                            box_color = 'red', text_color = 'red', 
+                            fontsize = 11, linewidth = 1, y_offset = -10):
+    """
+    Create a matplotlib image plot with one or more bounding boxes
+    
+    Args:
+        img_array (numpy.array): numpy array of image
+        xmin (list): list of x-minimum coordinates (expressed as percentages)
+        xmax (list): list of x-maximum coordinates (expressed as percentages)
+        ymin (list): list of y-minimum coordinates (expressed as percentages)
+        ymax (list): list of y-maximum coordinates (expressed as percentages)
+        label (list): list of bounding box labels
+        box_color (str): color to use in bounding box edge (defaults to 'red')
+        text_color (str): color to use in text label (defaults to 'red')
+        fontsize (int): size to use for label font (defaults to 11)
+        linewidth (int): size to use for box edge line width (defaults to 1)
+        y_offset (int): how far to offset text label from upper-left corner of bounding box (defaults to -10)
+    """
+    # Extract image dimensions and create plot object
+    h, w, c = img_arr.shape
+    fig,ax = plt.subplots(1)
+    
+    # Extract coordinates and dimensions
+    for i, x in enumerate(coords):
+        xmin_p = x[0]
+        xmax_p = x[1]
+        ymin_p = x[2]
+        ymax_p = x[3]
+        box_width = xmax_p - xmin_p
+        box_height = ymax_p - ymin_p
+    
+        # Create rectangle and label text
+        rect = patches.Rectangle((xmin_p, ymin_p), box_width, box_height, linewidth = linewidth, edgecolor = box_color, facecolor = 'none')
+        ax.text(xmin_p, ymin_p + y_offset, labels[i], color = text_color, fontsize = fontsize)
+        ax.add_patch(rect)
+    plt.imshow(img_arr)
+    plt.show()
 
+
+class YoloPredictor:
+    def __init__(self,
+                 image_file_path,                 
+                 model_class = yolo_v2_convnet(),
+                 model_weight_path = f'{model_save_path}{model_save_name}',
+                 image_reader = ImageReader(),
+                 true_box_buffer = generator_config['TRUE_BOX_BUFFER'],
+                 labels = generator_config['LABELS'],
+                 obj_threshold = 0.001,
+                 iou_threshold = 0.7):
+        self.image_file_path = image_file_path
+        self.model_class = model_class
+        self.model_weight_path = model_weight_path
+        self.image_reader = image_reader
+        self.true_box_buffer = true_box_buffer
+        self.labels = labels
+        self.obj_threshold = obj_threshold
+        self.iou_threshold = iou_threshold
+        
+    def process_image(self):
+        test_image = np.expand_dims(self.image_reader.fit(self.image_file_path), 0)
+        dummy_array = np.zeros((1, 1, 1, 1, self.true_box_buffer, 4))
+        return test_image, dummy_array
+        
+    def load_model(self):
+        saved_model = self.model_class
+        saved_model.load_weights(self.model_weight_path)
+        return saved_model
+    
+    def predict(self):
+        saved_model = self.load_model()
+        test_image, dummy_array = self.process_image()
+        test_prediction = saved_model.predict([test_image, dummy_array])
+        netout = test_prediction[0]
+        output_rescaler = OutputRescaler()
+        netout_scale = output_rescaler.fit(netout)
+        boxes = find_high_class_probability_bbox(netout_scale, self.obj_threshold)
+        final_boxes = nonmax_suppression(boxes, iou_threshold = self.iou_threshold, obj_threshold = self.obj_threshold)
+        plot_image_bounding_box(test_image[0], final_boxes, self.labels)
 
 
 
@@ -804,7 +883,11 @@ def plot_image_bounding_box(img_arr, boxes, labels = generator_config['LABELS'],
 # Load Data
 with open(f'{dict_write_folder}{dict_list_save_name}', 'rb') as fp:
     train_image = pickle.load(fp)   
-
+    
+    
+    
+temp = mf.unnest_list_of_lists([[x.get('name') for x in y.get('object')] for y in train_image])
+temp_count = mf.get_unique_count_dict(temp)
 
 
 ### Create Generator
@@ -926,18 +1009,29 @@ model.fit(train_batch_generator,
 
 
 
+# Load Saved Model Weights
+#saved_model = yolo_v2_convnet()
+#saved_model.load_weights(f'{model_save_path}{model_save_name}')
 
-        
-"""
+predictor =  YoloPredictor(image_file_path = random.choice([vi.get('filename') for vi in valid_image]))
+predictor.predict()
 
 
-random_image_name = random.choice(os.listdir('C:/local_images/'))
+
+
+# Pick Random Image from Validation Set
+valid_filenames = [vi.get('filename') for vi in valid_image]
+random_image_name = random.choice(valid_filenames)
+
+# Process Image
 img_reader = ImageReader()
-test_image = img_reader.fit(f'C:/local_images/{random_image_name}')
+test_image = img_reader.fit(random_image_name)
+plt.imshow(test_image)
+
+# Make Prediction
 test_image = np.expand_dims(test_image, 0)
 dummy_array = np.zeros((1, 1, 1, 1, generator_config['TRUE_BOX_BUFFER'], 4))
-test_pred = model.predict([test_image, dummy_array])
-
+test_pred = saved_model.predict([test_image, dummy_array])
 
 
 netout = test_pred[0]
@@ -952,10 +1046,61 @@ iou_threshold = 0.7
 final_boxes = nonmax_suppression(boxes, iou_threshold = iou_threshold, obj_threshold = obj_threshold)
 print("{} final number of boxes".format(len(final_boxes)))
 
-
-
 plot_image_bounding_box(test_image[0], final_boxes, generator_config['LABELS'])      
         
+
+
+
+
+
+
+
+
+
+
+
+
+rand_i = random.choice(range(len(valid_image)))
+
+temp = valid_image[rand_i]
+
+temp_image = np.asarray(load_img(temp.get('filename')))
+plt.imshow(temp_image)
+
+temp_coords = [[temp.get('object')[x].get('xmin'), temp.get('object')[x].get('xmax'),
+               temp.get('object')[x].get('ymin'), temp.get('object')[x].get('ymax')] for x in range(len(temp.get('object')))]
+
+temp_labels = [temp.get('object')[x].get('name') for x in range(len(temp.get('object')))]
+
+plot_actual_image_bounding_box(img_arr = temp_image,
+                        coords = temp_coords,
+                        labels = temp_labels,
+                            box_color = 'red', text_color = 'red', 
+                            fontsize = 11, linewidth = 1, y_offset = -10)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+"""
+
+
+
+
+
 
 
  
