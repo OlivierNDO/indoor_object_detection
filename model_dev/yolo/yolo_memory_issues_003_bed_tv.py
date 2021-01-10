@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jan 10 12:13:59 2021
+
+@author: user
+"""
+
 ### Configuration - Packages
 ###############################################################################
 
@@ -44,7 +51,7 @@ from src import loss_functions as lf
 ###############################################################################
 my_project_folder = 'D:/indoor_object_detection/'
 model_save_path = cdp.config_model_save_folder
-model_save_name = 'yolo_detector.hdf5'
+model_save_name = 'yolo_detector_bed_tv.hdf5'
 
 # Path to Images (created in "create_coco_style_data_gcp.py)
 local_image_folder = 'D:/iod_25_class_intmd_save/'
@@ -65,8 +72,8 @@ generator_config = {
     'GRID_H' : 13,  
     'GRID_W' : 13,
     'BOX' : 5,
-    'LABELS' : cdp.config_obj_detection_classes,
-    'CLASS' : len(cdp.config_obj_detection_classes),
+    'LABELS' : ['Television', 'Bed'],
+    'CLASS' : len(['Television', 'Bed']),
     'ANCHORS' : [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
     'BATCH_SIZE' : 8,
     'TRUE_BOX_BUFFER' : 50,
@@ -747,54 +754,6 @@ def nonmax_suppression(boxes, iou_threshold, obj_threshold):
 
 
 
-def plot_image_bounding_box(img_arr, boxes, labels = generator_config['LABELS'],
-                            box_color = 'red', text_color = 'red', 
-                            fontsize = 11, linewidth = 1, y_offset = -10, obj_baseline=0.05):
-    """
-    Create a matplotlib image plot with one or more bounding boxes
-    
-    Args:
-        img_arr (numpy.array): 3d numpy array of image
-        boxes (list): list of BoundBox() objects
-        labels (list): list of class labels (defaults to generator_config)
-        box_color (str): color to use in bounding box edge (defaults to 'red')
-        text_color (str): color to use in text label (defaults to 'red')
-        fontsize (int): size to use for label font (defaults to 11)
-        linewidth (int): size to use for box edge line width (defaults to 1)
-        y_offset (int): how far to offset text label from upper-left corner of bounding box (defaults to -10)
-    """
-    def adjust_minmax(c,_max):
-        if c < 0:
-            c = 0   
-        if c > _max:
-            c = _max
-        return c
-    
-    image = copy.deepcopy(img_arr)
-    image_h, image_w, _ = image.shape
-    score_rescaled  = np.array([box.get_score() for box in boxes])
-    score_rescaled /= obj_baseline
-    
-    colors = sns.color_palette("husl", 8)
-    fig,ax = plt.subplots(1)
-    
-    for sr, box,color in zip(score_rescaled, boxes, colors):
-        xmin = adjust_minmax(int(box.xmin*image_w),image_w)
-        ymin = adjust_minmax(int(box.ymin*image_h),image_h)
-        xmax = adjust_minmax(int(box.xmax*image_w),image_w)
-        ymax = adjust_minmax(int(box.ymax*image_h),image_h)
-        text = "{:10} {:4.3f}".format(labels[box.label], box.get_score())
-        box_width = xmax - xmin
-        box_height = ymax - ymin
-        
-        # Create rectangle and label text
-        rect = patches.Rectangle((xmin, ymin), box_width, box_height, linewidth = linewidth, edgecolor = box_color, facecolor = 'none')
-        ax.text(xmin, ymin + y_offset, text, color = text_color, fontsize = fontsize)
-        ax.add_patch(rect)
-        print(text)
-    plt.imshow(img_arr)
-    plt.show()
-    
     
 def plot_actual_image_bounding_box(img_arr, coords, labels,
                             box_color = 'red', text_color = 'red', 
@@ -878,6 +837,7 @@ class YoloPredictor:
 
 
 
+
 ### Load Data
 ###############################################################################
 # Load Data
@@ -885,9 +845,19 @@ with open(f'{dict_write_folder}{dict_list_save_name}', 'rb') as fp:
     train_image = pickle.load(fp)   
     
     
+ 
+# Subset to Television and Bed
+use_classes = ['Television', 'Bed']
+
+
+names = [[n.get('name') for n in ti.get('object')] for ti in train_image]
+train_image = [x for i, x in enumerate(train_image) if ('Television' in names[i] or 'Bed' in names[i])]
+for sti in train_image:
+    sti['object'] = [x for x in sti['object'] if x.get('name') in use_classes]
     
-temp = mf.unnest_list_of_lists([[x.get('name') for x in y.get('object')] for y in train_image])
-temp_count = mf.get_unique_count_dict(temp)
+
+generator_config['LABELS'] = use_classes
+generator_config['CLASS'] = len(use_classes)
 
 
 ### Create Generator
@@ -907,7 +877,6 @@ model = yolo_v2_convnet()
 
 
 # Load Weights
-"""
 weight_reader = WeightReader(weights_path)
 weight_reader.reset()
 nb_conv = 21
@@ -939,7 +908,7 @@ for i in range(1, nb_conv+1):
         kernel = kernel.reshape(list(reversed(conv_layer.get_weights()[0].shape)))
         kernel = kernel.transpose([2,3,1,0])
         conv_layer.set_weights([kernel])
-"""
+
 
 loss_yolo = lf.YoloLoss(generator_config['ANCHORS'],
                         (generator_config['GRID_W'], generator_config['GRID_H']),
@@ -964,8 +933,8 @@ checkpoint = keras.callbacks.ModelCheckpoint(f'{model_save_path}{model_save_name
                              save_best_only=True, 
                              mode='min')
 
-lr_schedule = m.CyclicalRateSchedule(min_lr = 0.00001,
-                                     max_lr = 0.00015,
+lr_schedule = m.CyclicalRateSchedule(min_lr = 0.001,
+                                     max_lr = 0.0015,
                                      n_epochs = 200,
                                      warmup_epochs = 5,
                                      cooldown_epochs = 1,
@@ -991,7 +960,7 @@ model.fit(train_batch_generator,
           validation_data = valid_batch_generator,
           steps_per_epoch = len(train_batch_generator),
           validation_steps = len(valid_batch_generator),
-          epochs = 1, 
+          epochs = 2, 
           verbose = 1,
           callbacks = [early_stop, checkpoint, lr_schedule.lr_scheduler()])
 
@@ -1003,135 +972,10 @@ model.fit(train_batch_generator,
 
 
 
-
-
-
-
-
-
-
 # Load Saved Model Weights
 #saved_model = yolo_v2_convnet()
 #saved_model.load_weights(f'{model_save_path}{model_save_name}')
 
 predictor =  YoloPredictor(image_file_path = random.choice([vi.get('filename') for vi in valid_image]))
 predictor.predict()
-
-
-
-
-# Pick Random Image from Validation Set
-valid_filenames = [vi.get('filename') for vi in valid_image]
-random_image_name = random.choice(valid_filenames)
-
-# Process Image
-img_reader = ImageReader()
-test_image = img_reader.fit(random_image_name)
-plt.imshow(test_image)
-
-# Make Prediction
-test_image = np.expand_dims(test_image, 0)
-dummy_array = np.zeros((1, 1, 1, 1, generator_config['TRUE_BOX_BUFFER'], 4))
-test_pred = saved_model.predict([test_image, dummy_array])
-
-
-netout = test_pred[0]
-output_rescaler = OutputRescaler()
-netout_scale = output_rescaler.fit(netout)
-
-
-obj_threshold = 0.001
-boxes = find_high_class_probability_bbox(netout_scale,obj_threshold)
-    
-iou_threshold = 0.7
-final_boxes = nonmax_suppression(boxes, iou_threshold = iou_threshold, obj_threshold = obj_threshold)
-print("{} final number of boxes".format(len(final_boxes)))
-
-plot_image_bounding_box(test_image[0], final_boxes, generator_config['LABELS'])      
-        
-
-
-
-
-
-
-
-
-
-
-
-
-rand_i = random.choice(range(len(valid_image)))
-
-temp = valid_image[rand_i]
-
-temp_image = np.asarray(load_img(temp.get('filename')))
-plt.imshow(temp_image)
-
-temp_coords = [[temp.get('object')[x].get('xmin'), temp.get('object')[x].get('xmax'),
-               temp.get('object')[x].get('ymin'), temp.get('object')[x].get('ymax')] for x in range(len(temp.get('object')))]
-
-temp_labels = [temp.get('object')[x].get('name') for x in range(len(temp.get('object')))]
-
-plot_actual_image_bounding_box(img_arr = temp_image,
-                        coords = temp_coords,
-                        labels = temp_labels,
-                            box_color = 'red', text_color = 'red', 
-                            fontsize = 11, linewidth = 1, y_offset = -10)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-"""
-
-
-
-
-
-
-
- 
-
-
-
-
-Epoch 1/5
-loss_xywh: 1.5628384351730347 ... type: <class 'tensorflow.python.framework.ops.EagerTensor'>
-
-loss_conf: Tensor("RealDiv_3:0", shape=(), dtype=float32) ... type: <class 'tensorflow.python.framework.ops.Tensor'>
-
-loss_class: 1.5242124795913696 ... type: <class 'tensorflow.python.framework.ops.EagerTensor'>
-
-loss: Tensor("AddV2_5:0", shape=(), dtype=float32)
-
-
-
-"""
-
-
-
-
-
-
-
-
-
-
-
-
-
 
