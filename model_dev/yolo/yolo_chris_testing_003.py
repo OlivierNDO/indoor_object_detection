@@ -28,7 +28,7 @@ import os
 import random
 from io import BytesIO
 import io
-import cv2
+#import cv2
 
 
 # Import Project Modules
@@ -127,7 +127,8 @@ class ImageReader(object):
         
     def encode_core(self,image, reorder_rgb=True):     
         # resize the image to standard size
-        image = cv2.resize(image, (self.IMAGE_H, self.IMAGE_W))
+        #image = cv2.resize(image, (self.IMAGE_H, self.IMAGE_W))
+        image = resize(image, (self.IMAGE_H, self.IMAGE_W))
         if reorder_rgb:
             image = image[:,:,::-1]
         if self.norm is not None:
@@ -138,7 +139,8 @@ class ImageReader(object):
         if not isinstance(train_instance,dict):
             train_instance = {'filename':train_instance}
         image_name = train_instance['filename']
-        image = cv2.imread(image_name)
+        #image = cv2.imread(image_name)
+        image = np.array(load_img(image_name))
         h, w, c = image.shape
         if image is None: print('Cannot find ', image_name)
         image = self.encode_core(image, reorder_rgb=True)
@@ -894,8 +896,7 @@ with open(f'{dict_write_folder}{dict_list_save_name}', 'rb') as fp:
 train_batch_generator = SimpleBatchGenerator(train_image, generator_config,
                                              norm=normalize, shuffle=True)
 
-model, true_boxes = define_YOLOv2(IMAGE_H,IMAGE_W,GRID_H,GRID_W,TRUE_BOX_BUFFER,BOX,CLASS, 
-                                  trainable=False)
+model, true_boxes = define_YOLOv2(IMAGE_H, IMAGE_W, GRID_H, GRID_W, TRUE_BOX_BUFFER, BOX, CLASS, trainable=False)
 model.summary()
 
 layer   = model.layers[-4] # the last convolutional layer
