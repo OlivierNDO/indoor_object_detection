@@ -782,8 +782,10 @@ def calc_loss_conf(conf_mask,true_box_conf_IOU, pred_box_conf):
     # that has no assigned object but some objects may be in bounding box.
     # N conf
     nb_conf_box  = tf.reduce_sum(tf.cast(conf_mask  > 0.0, tf.float32))
+    #loss_conf = tf.math.divide(tf.reduce_sum(tf.square(true_box_conf_IOU-pred_box_conf) * conf_mask), (nb_conf_box  + 1e-6))
     loss_conf    = tf.reduce_sum(tf.square(true_box_conf_IOU-pred_box_conf) * conf_mask)  / (nb_conf_box  + 1e-6) / 2.
-    return(loss_conf)
+    loss_conf = tf.convert_to_tensor(loss_conf, dtype = tf.float32)
+    return loss_conf
 
 
 def custom_loss_core(y_true,
@@ -862,9 +864,22 @@ def custom_loss_core(y_true,
     # Step 8: Calculate loss for the confidence
     loss_conf = calc_loss_conf(conf_mask,true_box_conf_IOU, pred_box_conf)
     
+    #print('loss_xywh:')
+    #print(type(loss_xywh))
+    #print('loss_class:')
+    #print(type(loss_class))
+    
+    
+    print(f'loss_xywh: {loss_xywh}')
+    print(f'loss_conf: {loss_conf}')
+    print(f'loss_class: {loss_class}')
+    
     loss = loss_xywh + loss_conf + loss_class
     return(loss)
-
+    
+    
+# loss_conf: <class 'tensorflow.python.framework.ops.Tensor'>
+# other two: <class 'tensorflow.python.framework.ops.EagerTensor'>
 
 def custom_loss(y_true, y_pred):
     loss = custom_loss_core(y_true,
@@ -892,6 +907,21 @@ def normalize(image):
 with open(f'{dict_write_folder}{dict_list_save_name}', 'rb') as fp:
     train_image = pickle.load(fp)   
 
+
+
+
+
+x = tf.constant([123456789])
+
+x2 = tf.cast(x, float)
+
+
+
+
+
+
+
+tf.keras.backend.clear_session()
 
 train_batch_generator = SimpleBatchGenerator(train_image, generator_config,
                                              norm=normalize, shuffle=True)
@@ -925,10 +955,10 @@ optimizer = Adam(lr=0.5e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 #optimizer = SGD(lr=1e-4, decay=0.0005, momentum=0.9)
 #optimizer = RMSprop(lr=1e-4, rho=0.9, epsilon=1e-08, decay=0.0)
 
-model.compile(loss=custom_loss, optimizer=optimizer)
+#model.compile(loss=custom_loss, optimizer=optimizer)
+model.compile(loss=custom_loss, optimizer=optimizer, run_eagerly = True)
 
-
-tf.config.run_functions_eagerly(True)
+#tf.config.run_functions_eagerly(True)
 
 model.fit_generator(generator        = train_batch_generator, 
                     steps_per_epoch  = len(train_batch_generator), 
@@ -938,3 +968,16 @@ model.fit_generator(generator        = train_batch_generator,
                     #validation_steps = len(valid_batch),
                     callbacks        = [early_stop, checkpoint], 
                     max_queue_size   = 3)
+
+
+
+
+
+
+
+
+
+
+
+
+
