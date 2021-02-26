@@ -952,6 +952,27 @@ conf_mask_tf = get_conf_mask(best_ious_tf,
                              LAMBDA_NO_OBJECT, 
                              LAMBDA_OBJECT)
 
+
+# Function (from before)
+def calc_loss_conf(conf_mask,true_box_conf_IOU, pred_box_conf):  
+    '''
+    == input ==
+    
+    conf_mask         : tensor of shape (Nbatch, N grid h, N grid w, N anchor)
+    true_box_conf_IOU : tensor of shape (Nbatch, N grid h, N grid w, N anchor)
+    pred_box_conf     : tensor of shape (Nbatch, N grid h, N grid w, N anchor)
+    '''
+    # the number of (grid cell, anchor) pair that has an assigned object or
+    # that has no assigned object but some objects may be in bounding box.
+    # N conf
+    nb_conf_box  = tf.reduce_sum(tf.cast(conf_mask  > 0.0, tf.float32))
+    #loss_conf = tf.math.divide(tf.reduce_sum(tf.square(true_box_conf_IOU-pred_box_conf) * conf_mask), (nb_conf_box  + 1e-6))
+    loss_conf    = tf.reduce_sum(tf.square(true_box_conf_IOU-pred_box_conf) * conf_mask)  / (nb_conf_box  + 1e-6) / 2.
+    loss_conf = tf.convert_to_tensor(loss_conf, dtype = tf.float32)
+    return loss_conf
+
+
+# Test & Debug
 loss_conf_tf = calc_loss_conf(conf_mask_tf,true_box_conf_IOU_tf, pred_box_conf_tf)
 
 
