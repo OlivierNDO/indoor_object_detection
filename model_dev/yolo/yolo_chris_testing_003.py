@@ -911,16 +911,53 @@ with open(f'{dict_write_folder}{dict_list_save_name}', 'rb') as fp:
 
 
 
-x = tf.constant([123456789])
-
-x2 = tf.cast(x, float)
 
 
 
+### Experiment with Loss Function
+###############################################################################
+# https://fairyonice.github.io/Part_4_Object_Detection_with_Yolo_using_VOC_2012_data_loss.html
+    
+
+# Create dummy y prediction
+size   = BATCH_SIZE*GRID_W*GRID_H*BOX*(4 + 1 + CLASS)
+y_pred = np.random.normal(size=size,scale = 10/(GRID_H*GRID_W)) 
+y_pred = y_pred.reshape(BATCH_SIZE,GRID_H,GRID_W,BOX,4 + 1 + CLASS)
+    
+y_pred_tf = tf.constant(y_pred,dtype="float32")
+cell_grid = get_cell_grid(GRID_W,GRID_H,BATCH_SIZE,BOX)
+pred_box_xy_tf, pred_box_wh_tf, pred_box_conf_tf, pred_box_class_tf = adjust_scale_prediction(y_pred_tf, cell_grid,  ANCHORS)
+
+# Create batches
+train_batch_generator = SimpleBatchGenerator(train_image, generator_config, norm=normalize, shuffle=True)
+[x_batch,b_batch],y_batch = train_batch_generator.__getitem__(idx=3)
+
+
+# Create dummy ground truth
+true_boxes_tf = tf.constant(b_batch,dtype="float32")
+best_ious_tf = calc_IOU_pred_true_best(pred_box_xy_tf, pred_box_wh_tf, true_boxes_tf)
+
+y_batch_tf = tf.constant(y_batch,dtype="float32")
+true_box_xy_tf, true_box_wh_tf, true_box_conf_tf, true_box_class_tf = extract_ground_truth(y_batch_tf)
+
+
+true_box_conf_IOU_tf = calc_IOU_pred_true_assigned(
+                            true_box_conf_tf,
+                            true_box_xy_tf, true_box_wh_tf,
+                            pred_box_xy_tf,  pred_box_wh_tf)
+
+conf_mask_tf = get_conf_mask(best_ious_tf, 
+                             true_box_conf_tf, 
+                             true_box_conf_IOU_tf,
+                             LAMBDA_NO_OBJECT, 
+                             LAMBDA_OBJECT)
+
+loss_conf_tf = calc_loss_conf(conf_mask_tf,true_box_conf_IOU_tf, pred_box_conf_tf)
 
 
 
-
+### Fit Model
+###############################################################################
 tf.keras.backend.clear_session()
 
 train_batch_generator = SimpleBatchGenerator(train_image, generator_config,
@@ -972,7 +1009,21 @@ model.fit_generator(generator        = train_batch_generator,
 
 
 
+"""
+Epoch 1/5
+loss_xywh: 14239.2314453125
+loss_conf: Tensor("RealDiv_3:0", shape=(), dtype=float32)
+loss_class: 10.019153594970703
+   1/6596 [..............................] - ETA: 0s - loss: 0.0000e+00loss_xywh: 6528.9072265625
+loss_conf: Tensor("RealDiv_20:0", shape=(), dtype=float32)
+loss_class: 6.113082408905029
+   2/6596 [..............................] - ETA: 18:08 - loss: 0.0000e+00loss_xywh: 6516.4453125
+loss_conf: Tensor("RealDiv_37:0", shape=(), dtype=float32)
+loss_class: 9.158040046691895
 
+
+
+"""
 
 
 
