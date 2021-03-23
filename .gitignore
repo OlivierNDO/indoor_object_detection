@@ -1,4 +1,7 @@
 *csv
 *json
+*jpeg
+*png
+*h5
 *.weights
 .ipynb_checkpoints
